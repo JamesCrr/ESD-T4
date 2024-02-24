@@ -11,7 +11,7 @@ setInterval(() => {
       console.log("ERROR FROM backend:3000");
       console.error(`Error making the request: ${error.message}`);
     });
-}, 2000);
+}, 5000);
 
 // Keep the program running by using a Promise that never resolves
 new Promise(() => {});

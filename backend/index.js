@@ -18,7 +18,7 @@ app.get("/json", (req, res) => {
     message: "This is a JSON response",
     timestamp: new Date(),
   };
-
+  console.log("Request received!!!");
   res.json(responseObject);
 });
 
