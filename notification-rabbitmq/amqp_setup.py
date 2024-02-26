@@ -2,20 +2,20 @@ import time
 import pika
 from os import environ
 
-hostname = "localhost" # default hostname
+hostName = "localhost" # default hostName
 port = 5672            # default port
-exchangename = "order_topic" # exchange name
-exchangetype = "topic" # - use a 'topic' exchange to enable interaction
+exchangeName = "email_topic" # exchange name
+exchangeType = "topic" # - use a 'topic' exchange to enable interaction
 
 # Instead of hardcoding the values, we can also get them from the environ as shown below
-# hostname = environ.get('hostname') #localhost
+# hostName = environ.get('hostName') #localhost
 # port = environ.get('port')         #5672 
-# exchangename = environ.get('exchangename') #order_topic
-# exchangetype = environ.get('exchangetype') #topic
+# exchangeName = environ.get('exchangeName') #email_topic
+# exchangeType = environ.get('exchangeType') #topic
 # a_queue_name = environ.get('a_queue_name') #Activity_Log
 # e_queue_name = environ.get('e_queue_name') #Error
 
-#to create a connection to the broker
+# create a connection to the broker
 def create_connection(max_retries=12, retry_interval=5):
     print('amqp_setup:create_connection')
     
@@ -28,7 +28,7 @@ def create_connection(max_retries=12, retry_interval=5):
             print('amqp_setup: Trying connection')
             # connect to the broker and set up a communication channel in the connection
             connection = pika.BlockingConnection(pika.ConnectionParameters
-                                (host=hostname, port=port,
+                                (host=hostName, port=port,
                                  heartbeat=3600, blocked_connection_timeout=3600)) # these parameters to prolong the expiration time (in seconds) of the connection
                 # Note about AMQP connection: various network firewalls, filters, gateways (e.g., SMU VPN on wifi), may hinder the connections;
                 # If "pika.exceptions.AMQPConnectionError" happens, may try again after disconnecting the wifi and/or disabling firewalls.
@@ -54,30 +54,34 @@ def create_channel(connection):
     channel = connection.channel()
     return channel
 
-#function to create queues
-def create_queues(channel):
-    print('amqp_setup:create queues')
-    create_error_queue(channel)
-    create_activity_log_queue(channel)
+def create_queue(channel, exchangeName, queueName, routingKey):
+    print("amqp_setup:creating " + queueName + " queue")
+    channel.queue_declare(queue=queueName, durable=True) # 'durable' makes the queue survive broker restarts
+    channel.queue_bind(exchange=exchangeName, queue=queueName, routing_key=routingKey) # bind the queue to the exchange via the key
 
-# function to create Activity_Log queue  
-def create_activity_log_queue(channel):
-    print('amqp_setup:create_activity_log_queue')
-    a_queue_name = 'Activity_Log'
-    channel.queue_declare(queue=a_queue_name, durable=True) # 'durable' makes the queue survive broker restarts
-    channel.queue_bind(exchange=exchangename, queue=a_queue_name, routing_key='#')
-    # bind the queue to the exchange via the key
-    # 'routing_key=#' => any routing_key would be matched
+# # function to create queues
+# def create_queues(channel):
+#     print('amqp_setup:create queues')
+#     create_activity_log_queue(channel)
+#     create_error_queue(channel)
 
-# function to create Error queue
-def create_error_queue(channel):
-    print('amqp_setup:create_error_queue')
-    e_queue_name = 'Error'
-    channel.queue_declare(queue=e_queue_name, durable=True) # 'durable' makes the queue survive broker restarts
-    channel.queue_bind(exchange=exchangename, queue=e_queue_name, routing_key='*.error')
-    # bind the queue to the exchange via the key
-    # any routing_key with two words and ending with '.error' will be matched
+# # function to create Activity_Log queue  
+# def create_activity_log_queue(channel):
+#     print('amqp_setup:create_activity_log_queue')
+#     a_queue_name = 'Activity_Log'
+#     channel.queue_declare(queue=a_queue_name, durable=True) # 'durable' makes the queue survive broker restarts
+#     channel.queue_bind(exchange=exchangeName, queue=a_queue_name, routing_key='#')
+#     # bind the queue to the exchange via the key
+#     # 'routing_key=#' => any routing_key would be matched
 
+# # function to create Error queue
+# def create_error_queue(channel):
+#     print('amqp_setup:create_error_queue')
+#     e_queue_name = 'Error'
+#     channel.queue_declare(queue=e_queue_name, durable=True) # 'durable' makes the queue survive broker restarts
+#     channel.queue_bind(exchange=exchangeName, queue=e_queue_name, routing_key='*.error')
+#     # bind the queue to the exchange via the key
+#     # any routing_key with two words and ending with '.error' will be matched
 
 
 if __name__ == "__main__":  # execute this program only if it is run as a script (not by 'import')   
@@ -86,8 +90,9 @@ if __name__ == "__main__":  # execute this program only if it is run as a script
 
     # Set up the exchange if the exchange doesn't exist
     print('amqp_setup:create exchange')
-    channel.exchange_declare(exchange=exchangename, exchange_type=exchangetype, durable=True) # 'durable' makes the exchange survive broker restarts
+    channel.exchange_declare(exchange=exchangeName, exchange_type=exchangeType, durable=True) # 'durable' makes the exchange survive broker restarts
 
-    create_queues(channel)
+    # Create the queues
+    create_queue(channel, exchangeName, "EmailsQueue", "email.#")
     
     
