@@ -48,3 +48,35 @@ services:
     command: npm start
     depends_on:
       - frontend
+
+  # notification-rabbitmq:
+  #   image: rabbitmq:3-management
+  #   container_name: notification-rabbitmq
+  #   hostname: notification-rabbitmq
+  #   networks:
+  #     - own-net
+  #   ports:
+  #     - "5672:5672"
+  #     - "15672:15672"
+  #   volumes:
+  #     - ./notification-rabbitmq/conf.d:/etc/rabbitmq/conf.d
+
+  # emailer:
+  #   build: ./emailer
+  #   container_name: emailer
+  #   hostname: emailer
+  #   networks:
+  #     - own-net
+  #   depends_on:
+  #     - notification-rabbitmq
+
+  # sender:
+  #   build: ./send-notification
+  #   container_name: send-notification
+  #   hostname: send-notification
+  #   ports:
+  #     - "5001:5001"
+  #   networks:
+  #     - own-net
+  #   depends_on:
+  #     - emailer
