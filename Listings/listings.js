@@ -26,9 +26,11 @@ function addItemWithCounter(listing) {
         lastListingId = Math.max(...listingIds);
       }
       const newListingKey = ++lastListingId;
+      const dateTimeCreated = new Date(Date.now())
       
-      // Add newListingKey to the listing object
+      // Add newListingKey and dateTimeCreated to the listing object
       listing.id = newListingKey;
+      listing.dateTimeCreated = dateTimeCreated.toISOString();
       
       return db.ref(`listings/${newListingKey}`).set(listing)
         .then(() => {
