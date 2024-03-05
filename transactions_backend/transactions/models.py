@@ -7,7 +7,7 @@ class Transactions(models.Model):
     buyerId = models.IntegerField()
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     listingId = models.IntegerField()
-    # date_time = models.DateTimeField()
+    dateTime = models.DateTimeField(auto_now=True)
 
     class Meta:
         # specify the custom table name
