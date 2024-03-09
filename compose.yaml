@@ -99,3 +99,11 @@ services:
   #     - own-net
   #   depends_on:
   #     - emailer
+
+  # listings:
+  #   build: ./Listings
+  #   container_name: listings
+  #   ports:
+  #     - "3001:3001"
+  #   volumes:
+  #     - ./Listings/serviceAccountKeyListings.json:/usr/src/app/serviceAccountKeyListings.json

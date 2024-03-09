@@ -11,7 +11,7 @@ firebaseAdmin.initializeApp({
 
 const db = firebaseAdmin.database();
 const app = express();
-const port = 3000;
+const port = 3001;
 
 //Add listing with new key based on existing data
 function addItemWithCounter(listing) {
