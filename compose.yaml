@@ -49,6 +49,15 @@ services:
     depends_on:
       - frontend
 
+  transactions_backend:
+    build: ./transactions_backend
+    container_name: transactions_backend
+    networks:
+      - own-net
+    ports:
+      - "8000:8000"
+   
+
   # notification-rabbitmq:
   #   image: rabbitmq:3-management
   #   container_name: notification-rabbitmq
