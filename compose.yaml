@@ -56,6 +56,16 @@ services:
       - own-net
     ports:
       - "8000:8000"
+
+  flask_app:
+    build: ./bid_microservice
+    container_name: bid_microservice
+    networks:
+      - own-net
+    ports:
+      - "3012:3012"
+
+
    
 
   # notification-rabbitmq:
