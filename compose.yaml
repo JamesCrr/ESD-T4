@@ -58,7 +58,7 @@ services:
       - "8000:8000"
 
   flask_app:
-    build: ./bid_microservice
+    build: ./bid_microservice/service
     container_name: bid_microservice
     networks:
       - own-net
@@ -100,10 +100,10 @@ services:
   #   depends_on:
   #     - emailer
 
-  # listings:
-  #   build: ./Listings
-  #   container_name: listings
-  #   ports:
-  #     - "3001:3001"
-  #   volumes:
-  #     - ./Listings/serviceAccountKeyListings.json:/usr/src/app/serviceAccountKeyListings.json
+  listings:
+    build: ./Listings
+    container_name: listings
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./Listings/serviceAccountKeyListings.json:/usr/src/app/serviceAccountKeyListings.json
