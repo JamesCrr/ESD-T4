@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "service"
+version = "0.1.0"
+description = ""
+authors = ["Valentia Cheng <valcheng7@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+python-dotenv = "^1.0.1"
+flask = "^3.0.2"
+flask-cors = "^4.0.0"
+pydantic = "^2.6.2"
+logging = "^0.4.9.6"
+flask-pymongo = "^2.3.0"
+flasgger = "^0.9.7.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
