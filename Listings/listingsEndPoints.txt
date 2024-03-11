@@ -1,0 +1,14 @@
+Port: 3001
+GET
+/getListing/:listingId
+/getListingsByBuyer/:buyerId
+/getAllListings
+
+POST
+/createListing
+
+PUT
+/updateListing/:listingId
+
+DELETE
+/deleteListing/:listingId
