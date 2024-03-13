@@ -3,6 +3,7 @@ const axios = require("axios");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const app = express();
+const amqp = require("amqplib");
 
 // Middleware
 app.use(cors());
@@ -15,6 +16,66 @@ const listingEndpointURL = "http://listings:" + listingPortNum;
 const bidPortNum = process.env.BID_SIMPLE_PORT_NUM || 3012;
 const bidEndpointURL = "http://bid_microservice:" + bidPortNum;
 
+// Connect to RabbitMQ
+const queuehostName = "notification-rabbitmq";
+const exchangeName = "email_topic";
+let connection = undefined;
+let channel = undefined;
+(async () => {
+  let retryCount = 0;
+  const delayRetrySeconds = 2;
+  async function tryConnect() {
+    try {
+      connection = await amqp.connect(`amqp://guest:guest@${queuehostName}:5672`);
+      channel = await connection.createChannel();
+
+      // Declare the exchange if not already declared
+      await channel.assertExchange(exchangeName, "topic", { durable: true });
+    } catch (err) {
+      // Retry Connection
+      retryCount++;
+      console.error(`Error connecting to RabbitMQ (Attempt ${retryCount}:`, err.message);
+      console.log(`Retrying in ${delayRetrySeconds} seconds...`);
+      await new Promise((resolve) => setTimeout(resolve, delayRetrySeconds * 1000));
+    }
+  }
+
+  while (connection == undefined && channel == undefined) {
+    // Recursive retry
+    await tryConnect();
+  }
+  // Start Web Server
+  console.log("Connected to RabbitMQ successfully!");
+  const port = 3000;
+  app.listen(port, function () {
+    console.log("Web server listening on port " + port);
+  });
+
+  // Close the connection when done
+  // await connection.close();
+})();
+
+/**
+ * Helper function to send Message to Channel based on routing key
+ * @param {Object} channel
+ * @param {String} routingKey
+ * @param {String} message
+ */
+async function sendMessageToQueue(channel, routingKey, message) {
+  try {
+    // Publish the message to the exchange with the specified routing key
+    await channel.publish(exchangeName, routingKey, message);
+    console.log(`Message sent: ${JSON.stringify(message)} to ${exchangeName} with routing key of ${routingKey}`);
+  } catch (err) {
+    console.error("Error sending message:", err.message);
+  }
+}
+
+/**
+ * Helper function to log any Axios Erros to the console
+ * @param {Object} error
+ * @param {String} customConsoleMessage
+ */
 const printAxiosError = (error, customConsoleMessage) => {
   console.log(customConsoleMessage);
   if (error.response) {
@@ -112,12 +173,28 @@ app.post("/", async function (req, res, next) {
   }
 
   // AMQP: Send email that bid was confirmed
+  let message = {
+    emailType: "listingCreated",
+    emailTarget: "esdt42024@gmail.com",
+    emailTitle: "Listing Created!",
+    emailContent: "<p>Your Listing has been Created!</p>",
+    senderUserObject: {
+      username: "Pepe the frog",
+    },
+  };
+  sendMessageToQueue(channel, "email.listing", Buffer.from(JSON.stringify(message)));
+
   // AMQP: Notify previous bidder that he was outbidded
+  message = {
+    emailType: "outBidded",
+    emailTarget: "esdt42024@gmail.com",
+    emailTitle: "You have been Outbidded!",
+    emailContent: "<p>Your Bid has been OutBidded!</p>",
+    senderUserObject: {
+      username: "Pepe the frog",
+    },
+  };
+  sendMessageToQueue(channel, "email.outbidded", Buffer.from(JSON.stringify(message)));
 
   res.json({ message: "success!" });
-});
-
-const port = 3000;
-app.listen(port, function () {
-  console.log("Web server listening on port " + port);
 });

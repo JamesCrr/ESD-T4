@@ -43,9 +43,18 @@ def messageCallback(channel, method, properties, body): # required signature for
     print(f"{queueName}: Recording an JSON log:")
     print(messageJSON)
 
-    emailType = messageJSON["emailType"]
-    if emailType == "listingCreated":
-        emailservice.sendEmail("esdt42024@gmail.com", "Peppa Pig", "Listing Created!", "<p>Your Listing has been Created!</p>")
+    emailType = messageJSON["emailType"] if "emailType" in messageJSON else ""
+    emailTarget = messageJSON["emailTarget"] if "emailTarget" in messageJSON else "esdt42024@gmail.com"
+    emailTitle = messageJSON["emailTitle"] if "emailTitle" in messageJSON else ""
+    emailContent = messageJSON["emailContent"] if "emailContent" in messageJSON else ""
+    senderUserObject = messageJSON["senderUserObject"] if "senderUserObject" in messageJSON else None
+    if senderUserObject == None:
+        print(f"{queueName}: Message not processed! senderUserObject is None!")
+        return
+
+    # Send the email
+    # if emailType == "listingCreated":
+    emailservice.sendEmail(emailTarget, senderUserObject["username"], emailTitle, emailContent)
 
     # # Manually acknowledge the message
     # channel.basic_ack(delivery_tag=method.delivery_tag)

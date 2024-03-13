@@ -59,52 +59,62 @@ def extractJSON(request):
 def createEmailMessage(emailType, jsonData):
     result = {
         "emailType": emailType,
-        "email": "esdt42024@gmail.com"
+        "email": jsonData["emailTarget"] if "emailTarget" in jsonData else "esdt42024@gmail.com",
+        "emailContent": jsonData["emailContent"] if "emailContent" in jsonData else None,
+        "senderUserObject": jsonData["senderUserObject"] if "senderUserObject" in jsonData else None,
     }
     return result
+def newListingCreatedEmailDataObject(jsonData):
+    return createEmailMessage("listingCreated", jsonData)
+def newBidCreatedEmailDataObject(jsonData):
+    return createEmailMessage("bidCreated", jsonData)
+def newOutbiddedEmailDataObject(jsonData):
+    return createEmailMessage("bidOutbidded", jsonData)
+def newAuctionEndEmailDataObject(jsonData):
+    return createEmailMessage("auctionEnd", jsonData)
+def newPaymentSuccessEmailDataObject(jsonData):
+    return createEmailMessage("paymentSuccess", jsonData)
 
 
 @app.route("/listing/created", methods=['POST'])
 def listing_created():
     if not request.is_json:        
-        return jsonify({
-            "code": 400,
-            "message": "Invalid JSON input: " + str(request.get_data())
-        }), 400
+        return jsonify({"code": 400,"message": "Invalid JSON input: " + str(request.get_data())}), 400
 
     print("\nReceived /listing/created request")
     # Extract JSON data from request
     jsonData = extractJSON(request)
     if jsonData == None:
-        return jsonify({
-            "code": 400,
-            "message": "Invalid JSON input: " + str(request.get_data())
-        }), 400
+        return jsonify({"code": 400, "message": "Invalid JSON input: " + str(request.get_data())}), 400
     # Convert JSON data to email data
-    emailData = createEmailMessage("listingCreated", jsonData)
+    emailData = createNewListingCreatedEmail(jsonData)
 
     # Send to Queue
     messageResult = sendMessageToQueue(emailData)
-    print('\n------------------------')
+    print('\n---------------------------------')
     print('\n Result : ', messageResult)
     return jsonify(messageResult), messageResult["code"]
 
 
 @app.route("/bid/success", methods=['POST'])
 def bid_success():
-    pass
+    # Call newBidCreatedEmailDataObject(jsonData)
+    return jsonify({"code": 400, "message": "Invalid Route: " + str(request.get_data())}), 400
 
 @app.route("/bid/outbidded", methods=['POST'])
 def bid_outbidded():
-    pass
+    # Call newOutbiddedEmailDataObject(jsonData)
+    return jsonify({"code": 400, "message": "Invalid Route: " + str(request.get_data())}), 400
 
 @app.route("/auction/end", methods=['POST'])
 def auction_end():
-    pass
+    # Call newAuctionEndEmailDataObject(jsonData)
+    return jsonify({"code": 400, "message": "Invalid Route: " + str(request.get_data())}), 400
 
 @app.route("/payment/success", methods=['POST'])
 def payment_success():
-    pass
+    # Call newPaymentSuccessEmailDataObject(jsonData)
+    return jsonify({"code": 400, "message": "Invalid Route: " + str(request.get_data())}), 400
 
 
 

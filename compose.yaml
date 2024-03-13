@@ -10,6 +10,8 @@ volumes:
   frontend_node_modules:
 
 services:
+  # Remove this service before submitting!
+  #######################################################################
   # backend:
   #   build: ./backend
   #   container_name: backend
@@ -20,20 +22,6 @@ services:
   #   volumes:
   #     - ./backend:/app
   #     - ./backend/node_modules:/app/node_modules
-
-  # frontend:
-  #   build: ./frontend
-  #   container_name: frontend
-  #   networks:
-  #     - own-net
-  #   ports:
-  #     - "5173:5173"
-  #   volumes:
-  #     - ./frontend:/app
-  #     - /app/node_modules
-  #   command: npm run dev
-  #   depends_on:
-  #     - backend
 
   # ping-backend:
   #   build: ./ping-backend
@@ -48,6 +36,33 @@ services:
   #   command: npm start
   #   depends_on:
   #     - frontend
+
+  # # ONLY FOR TESTING SENDING TO RABBITMQ
+  # sender:
+  #   build: ./send-notification
+  #   container_name: send-notification
+  #   hostname: send-notification
+  #   ports:
+  #     - "5001:5001"
+  #   networks:
+  #     - own-net
+  #   depends_on:
+  #     - emailer
+  #######################################################################
+
+  # frontend:
+  #   build: ./frontend
+  #   container_name: frontend
+  #   networks:
+  #     - own-net
+  #   ports:
+  #     - "5173:5173"
+  #   volumes:
+  #     - ./frontend:/app
+  #     - /app/node_modules
+  #   command: npm run dev
+  #   depends_on:
+  #     - backend
 
   # transactions_backend:
   #   build: ./transactions_backend
@@ -83,19 +98,10 @@ services:
     hostname: emailer
     networks:
       - own-net
+    environment:
+      - PYTHONUNBUFFERED=1
     depends_on:
       - notification-rabbitmq
-
-  sender:
-    build: ./send-notification
-    container_name: send-notification
-    hostname: send-notification
-    ports:
-      - "5001:5001"
-    networks:
-      - own-net
-    depends_on:
-      - emailer
 
   listings:
     build: ./Listings
