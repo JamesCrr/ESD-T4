@@ -117,7 +117,7 @@ services:
     build: ./bid-for-listing-complex
     container_name: bid-for-listing-complex
     environment:
-      - LISTING_SIMPLE_PORT_NUM=3002
+      - LISTING_SIMPLE_PORT_NUM=3001
       - BID_SIMPLE_PORT_NUM=3012
     ports:
       - "3015:3000"

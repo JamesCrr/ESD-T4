@@ -11,7 +11,7 @@ app.use(bodyParser.json());
 
 // API Endpoints
 const userEndpointURL = "https://personal-swk23gov.outsystemscloud.com/User_API/rest/v1/user";
-const listingPortNum = process.env.LISTING_SIMPLE_PORT_NUM || 3002;
+const listingPortNum = process.env.LISTING_SIMPLE_PORT_NUM || 3001;
 const listingEndpointURL = "http://listings:" + listingPortNum;
 const bidPortNum = process.env.BID_SIMPLE_PORT_NUM || 3012;
 const bidEndpointURL = "http://bid_microservice:" + bidPortNum;
