@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const firebaseAdmin = require('firebase-admin');
 const { v4: uuidv4 } = require('uuid');
+var cors = require('cors')
 
 
 // Initialize Firebase Admin SDK
@@ -14,6 +15,7 @@ firebaseAdmin.initializeApp({
 const db = firebaseAdmin.database();
 const app = express();
 const port = 9999;
+app.use(cors())
 
 //Add listing with new key based on existing data
 function addListing(listing) {

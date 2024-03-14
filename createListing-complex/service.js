@@ -4,11 +4,12 @@ const amqp = require("amqplib");
 
 
 async function createListing(listing){
+  console.log(listing)
     try{
-        const response= await axios.post('http://localhost:3001/createListing', listing)
+        const response= await axios.post('http://listings:9999/createListing', listing)
         return response.data;
     }catch(error){
-        console.log("Error",error)
+        console.log("Error",error.message)
     }
 }
 

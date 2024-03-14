@@ -39,12 +39,12 @@ async function createTransactionRecord(buyerId,sellerId,listingId,amount){
         }
     }
     try{
-        const response= await axios.post('http://127.0.0.1:8000/transactions/', data,config)
+        const response= await axios.post('http://transactionsbackend:8000/transactions/', data,config)
         console.log('SUCCESS!:', response.data);
         return response.data;
         
     }catch(error){
-        console.log("Error",error)
+        console.log("Error",error.message)
     }
 }
 async function buyboost(userId,walletamt,amount){
