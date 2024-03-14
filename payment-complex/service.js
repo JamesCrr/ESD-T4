@@ -20,7 +20,7 @@ async function updateUserWallet(userId,amount){
             user_id:userId,
             wallet:walletamt+amount
         }
-        const response= await axios.post('https://personal-swk23gov.outsystemscloud.com/User_API/rest/v1/user/wallet', postData)
+        const response= await axios.put('https://personal-swk23gov.outsystemscloud.com/User_API/rest/v1/user/wallet', postData)
         return response.data;
     }catch(error){
         console.log("Error",error)

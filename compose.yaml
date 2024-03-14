@@ -64,13 +64,13 @@ services:
   #   depends_on:
   #     - backend
 
-  # transactions_backend:
-  #   build: ./transactions_backend
-  #   container_name: transactions_backend
-  #   networks:
-  #     - own-net
-  #   ports:
-  #     - "8000:8000"
+  transactions_backend:
+    build: ./transactions_backend
+    container_name: transactions_backend
+    networks:
+      - own-net
+    ports:
+      - "8000:8000"
 
   bid_microservice:
     build: ./bid_microservice/service
@@ -80,28 +80,28 @@ services:
     ports:
       - "3012:3012"
 
-  notification-rabbitmq:
-    image: rabbitmq:3-management
-    container_name: notification-rabbitmq
-    hostname: notification-rabbitmq
-    networks:
-      - own-net
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    volumes:
-      - ./notification-rabbitmq/conf.d:/etc/rabbitmq/conf.d
+  # notification-rabbitmq:
+  #   image: rabbitmq:3-management
+  #   container_name: notification-rabbitmq
+  #   hostname: notification-rabbitmq
+  #   networks:
+  #     - own-net
+  #   ports:
+  #     - "5672:5672"
+  #     - "15672:15672"
+  #   volumes:
+  #     - ./notification-rabbitmq/conf.d:/etc/rabbitmq/conf.d
 
-  emailer:
-    build: ./emailer
-    container_name: emailer
-    hostname: emailer
-    networks:
-      - own-net
-    environment:
-      - PYTHONUNBUFFERED=1
-    depends_on:
-      - notification-rabbitmq
+  # emailer:
+  #   build: ./emailer
+  #   container_name: emailer
+  #   hostname: emailer
+  #   networks:
+  #     - own-net
+  #   environment:
+  #     - PYTHONUNBUFFERED=1
+  #   depends_on:
+  #     - notification-rabbitmq
 
   listings:
     build: ./Listings
@@ -113,13 +113,21 @@ services:
     volumes:
       - ./Listings/serviceAccountKeyListings.json:/usr/src/app/serviceAccountKeyListings.json
 
-  bid-for-listing-complex:
-    build: ./bid-for-listing-complex
-    container_name: bid-for-listing-complex
-    environment:
-      - LISTING_SIMPLE_PORT_NUM=3001
-      - BID_SIMPLE_PORT_NUM=3012
+  payment-complex:
+    build: ./payment-complex
+    container_name: payment-complex
     ports:
-      - "3015:3000"
+      - "3031:4000"
     networks:
       - own-net
+
+  # bid-for-listing-complex:
+  #   build: ./bid-for-listing-complex
+  #   container_name: bid-for-listing-complex
+  #   environment:
+  #     - LISTING_SIMPLE_PORT_NUM=3001
+  #     - BID_SIMPLE_PORT_NUM=3012
+  #   ports:
+  #     - "3015:3000"
+  #   networks:
+  #     - own-net
