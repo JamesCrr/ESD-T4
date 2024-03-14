@@ -1,7 +1,13 @@
 FROM node:alpine
-WORKDIR /usr/src/app
+
+WORKDIR /directory
+
 COPY package*.json ./
+
 RUN npm install
+
 COPY . .
-EXPOSE 9999
-CMD ["node", "listings.js"]
+
+EXPOSE 3030
+
+CMD ["node", "index.js"]

@@ -14,13 +14,12 @@ async function getUser(userId){
 }
 async function updateUserWallet(userId,amount){
     try{
-        const walletamt= await getUser(userId);
-        console.log(walletamt,"WALLET AMT")
         postData={
-            user_id:userId,
-            wallet:walletamt+amount
+            userId: userId,
+            updateAmount:-amount
         }
         const response= await axios.put('https://personal-swk23gov.outsystemscloud.com/User_API/rest/v1/user/wallet', postData)
+        console.log(response.data,"minusss")
         return response.data;
     }catch(error){
         console.log("Error",error)
@@ -40,14 +39,37 @@ async function createTransactionRecord(buyerId,sellerId,listingId,amount){
         }
     }
     try{
-        const response= await axios.post('http://127.0.0.1:8000/transactions/', data,config)
+        const response= await axios.post('http://transactionsbackend:8000/transactions/', data,config)
         console.log('SUCCESS!:', response.data);
         return response.data;
         
     }catch(error){
-        console.log("Error",error)
+        console.log("Error",error.message)
     }
 }
+async function buyboost(userId,walletamt,amount){
+    if(amount>walletamt){
+        return {
+            success:false,
+            message:"Not enough money in user wallet!"
+        }
+    }else{
+        try{
+            postData={
+                userId:userId,
+                updateAmount:-amount
+            }
+            const response= await axios.put('https://personal-swk23gov.outsystemscloud.com/User_API/rest/v1/user/wallet', postData)
+            return {
+                success:true,
+                result:response.data
+            }
 
+        }catch(error){
+            console.log("Error",error)
+        }
+    }
+  
+}
 
-module.exports = { updateUserWallet,createTransactionRecord };
+module.exports = { updateUserWallet,createTransactionRecord,getUser,buyboost };
