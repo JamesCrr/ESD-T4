@@ -30,7 +30,6 @@ function addListing(listing) {
       const dateTimeCreated = new Date(Date.now())
       
       // Default values
-      //listing.id = newListingKey;
       listing.dateTimeCreated = dateTimeCreated.toISOString();
       listing.buyerId = "";
       listing.autionEndDateTime = "";

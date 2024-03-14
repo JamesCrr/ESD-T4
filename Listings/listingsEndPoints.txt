@@ -6,9 +6,24 @@ GET
 
 POST
 /createListing
+expected parameters = ['name', 'description', 'sellerId', 'startBid'];
+null values set as empty string in firebase ""
+Default values
+listing.dateTimeCreated = dateTimeCreated.toISOString();
+listing.buyerId = "";
+listing.autionEndDateTime = "";
+listing.transactionEndDateTime = "";
+listing.highestBid = 0;
+listing.highestBidder = "";
+listing.status = true;
+listing.boosted = false;
+listing.transactionStatus = false;
 
 PUT
 /updateListing/:listingId
+No need to include all parameters
+allowed Parameters = ['name', 'description', 'buyerId','highestBid', 'highestBidder', 'status', 'transactionEndDateTime', 
+                        'autionEndDateTime', 'status', 'transactionStatus', 'boosted'];
 
 DELETE
 /deleteListing/:listingId
