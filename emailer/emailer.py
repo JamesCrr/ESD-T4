@@ -18,7 +18,7 @@ queueName = 'EmailsQueue' # queue to be subscribed by emailer microservice
 API_KEY = environ.get("MJ_APIKEY_PUBLIC")
 API_SECRET = environ.get("MJ_APIKEY_PRIVATE")
 
-def receiveOrderLog(channel):
+def startListeningForMessages(channel):
     try:
         if not amqp_connection.check_exchange(channel, exchangeName, exchangeType):
             print(f"{queueName} is not defined! Consumer not initialized!")
@@ -35,25 +35,37 @@ def receiveOrderLog(channel):
 
     except KeyboardInterrupt:
         print(queueName+": Program interrupted by user.")
-    
-def processJSONMessage(message):
-    print(f"{queueName}: Recording an JSON log:")
-    print(message)
-
 
 def messageCallback(channel, method, properties, body): # required signature for the callback; no return
     print(f"\n{queueName}: Received an log by " + __file__)
-    # processJSONMessage(json.loads(body))
-    emailservice.sendEmail("esdt42024@gmail.com", "Peppa Pig")
+
+    messageJSON = json.loads(body)
+    print(f"{queueName}: Recording an JSON log:")
+    print(messageJSON)
+
+    emailType = messageJSON["emailType"] if "emailType" in messageJSON else ""
+    emailTarget = messageJSON["emailTarget"] if "emailTarget" in messageJSON else "esdt42024@gmail.com"
+    emailTitle = messageJSON["emailTitle"] if "emailTitle" in messageJSON else ""
+    emailContent = messageJSON["emailContent"] if "emailContent" in messageJSON else ""
+    senderUserObject = messageJSON["senderUserObject"] if "senderUserObject" in messageJSON else None
+    if senderUserObject == None:
+        print(f"{queueName}: Message not processed! senderUserObject is None!")
+        return
+
+    # Send the email
+    # if emailType == "listingCreated":
+    emailservice.sendEmail(emailTarget, senderUserObject["username"], emailTitle, emailContent)
+
+    # # Manually acknowledge the message
+    # channel.basic_ack(delivery_tag=method.delivery_tag)
 
 
 if __name__ == "__main__":  # execute this program only if it is run as a script (not by 'import')
     print(f"{queueName}: Getting Connection")
-    
     connection = amqp_connection.create_connection(hostName) # get the connection to the broker
     # connection = amqp_connection.create_connection("localhost") # get the connection to the broker
     print("EmailsQueue: Connection established successfully")
     
     channel = connection.channel()
-    receiveOrderLog(channel)
+    startListeningForMessages(channel)
 

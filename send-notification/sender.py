@@ -22,34 +22,28 @@ if not amqp_connection.check_exchange(channel, exchangeName, exchangeType):
     sys.exit(0)  # Exit with a success status
 
 
-def processEmailNotification(emailRequest):
-    emailInfo = json.dumps(emailRequest)
-    print("Decoded JSON data: ", emailInfo)
-
+def sendMessageToQueue(messageDictionary):
+    # Decode dictionary
+    messageInfo = json.dumps(messageDictionary)
+    print("Decoded JSON data: ", messageInfo)
     # Send to rabbitMQ
-    channel.basic_publish(exchange=exchangeName, routing_key="email.yes", body=emailInfo, properties=pika.BasicProperties(delivery_mode = 2)) 
+    channel.basic_publish(exchange=exchangeName, routing_key="email.yes", body=messageInfo, properties=pika.BasicProperties(delivery_mode = 2)) 
 
     # Return response
     return {
         "code": 201,
-        "data": {"emailInfo": emailInfo},
+        "data": {"messageInfo": messageInfo},
         "message": "Processing of Email Notification success."
     }
 
 
-@app.route("/send_email", methods=['POST'])
-def place_order():
-    # Simple check of input format and data of the request are JSON
+def extractJSON(request):
     if request.is_json:
         try:
-            emailRequest = request.get_json()
-            print("\nReceived an email notification in JSON:", emailRequest)
-
-            # 1. Send order info {cart items}
-            result = processEmailNotification(emailRequest)
-            print('\n------------------------')
-            print('\nresult: ', result)
-            return jsonify(result), result["code"]
+            # Convert to JSON
+            requestJSON = request.get_json()
+            print("Decoded JSON data: ", requestJSON)
+            return requestJSON
 
         except Exception as e:
             # Unexpected error in code
@@ -57,21 +51,75 @@ def place_order():
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             ex_str = str(e) + " at " + str(exc_type) + ": " + fname + ": line " + str(exc_tb.tb_lineno)
             print(ex_str)
+            return None
+    
+    # not JSON data 
+    return None
 
-            return jsonify({
-                "code": 500,
-                "message": "sender.py internal error: " + ex_str
-            }), 500
+def createEmailMessage(emailType, jsonData):
+    result = {
+        "emailType": emailType,
+        "email": jsonData["emailTarget"] if "emailTarget" in jsonData else "esdt42024@gmail.com",
+        "emailContent": jsonData["emailContent"] if "emailContent" in jsonData else None,
+        "senderUserObject": jsonData["senderUserObject"] if "senderUserObject" in jsonData else None,
+    }
+    return result
+def newListingCreatedEmailDataObject(jsonData):
+    return createEmailMessage("listingCreated", jsonData)
+def newBidCreatedEmailDataObject(jsonData):
+    return createEmailMessage("bidCreated", jsonData)
+def newOutbiddedEmailDataObject(jsonData):
+    return createEmailMessage("bidOutbidded", jsonData)
+def newAuctionEndEmailDataObject(jsonData):
+    return createEmailMessage("auctionEnd", jsonData)
+def newPaymentSuccessEmailDataObject(jsonData):
+    return createEmailMessage("paymentSuccess", jsonData)
 
-    # if reached here, not a JSON request.
-    return jsonify({
-        "code": 400,
-        "message": "Invalid JSON input: " + str(request.get_data())
-    }), 400
+
+@app.route("/listing/created", methods=['POST'])
+def listing_created():
+    if not request.is_json:        
+        return jsonify({"code": 400,"message": "Invalid JSON input: " + str(request.get_data())}), 400
+
+    print("\nReceived /listing/created request")
+    # Extract JSON data from request
+    jsonData = extractJSON(request)
+    if jsonData == None:
+        return jsonify({"code": 400, "message": "Invalid JSON input: " + str(request.get_data())}), 400
+    # Convert JSON data to email data
+    emailData = createNewListingCreatedEmail(jsonData)
+
+    # Send to Queue
+    messageResult = sendMessageToQueue(emailData)
+    print('\n---------------------------------')
+    print('\n Result : ', messageResult)
+    return jsonify(messageResult), messageResult["code"]
+
+
+@app.route("/bid/success", methods=['POST'])
+def bid_success():
+    # Call newBidCreatedEmailDataObject(jsonData)
+    return jsonify({"code": 400, "message": "Invalid Route: " + str(request.get_data())}), 400
+
+@app.route("/bid/outbidded", methods=['POST'])
+def bid_outbidded():
+    # Call newOutbiddedEmailDataObject(jsonData)
+    return jsonify({"code": 400, "message": "Invalid Route: " + str(request.get_data())}), 400
+
+@app.route("/auction/end", methods=['POST'])
+def auction_end():
+    # Call newAuctionEndEmailDataObject(jsonData)
+    return jsonify({"code": 400, "message": "Invalid Route: " + str(request.get_data())}), 400
+
+@app.route("/payment/success", methods=['POST'])
+def payment_success():
+    # Call newPaymentSuccessEmailDataObject(jsonData)
+    return jsonify({"code": 400, "message": "Invalid Route: " + str(request.get_data())}), 400
+
 
 
 if __name__ == "__main__":
-    print("This is flask " + os.path.basename(__file__) + " for placing an order...")
+    print("This is flask " + os.path.basename(__file__) + " for sending an email...")
     app.run(host="0.0.0.0", port=5001, debug=True)
     # Notes for the parameters: 
     # - debug=True will reload the program automatically if a change is detected;
