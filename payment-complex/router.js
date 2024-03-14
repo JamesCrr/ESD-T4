@@ -10,11 +10,24 @@ router.post('/closeAuctionPost', async (req, res) => {
     const postData = req.body;
     try {
         const result = await updateUserWallet(postData.sellerId, postData.amount);
-        const result2= await createTransactionRecord(postData.buyerId,postData.sellerId,postData.listingId, postData.amount);
-        res.json({
-            updateWallet:result,
-            "createTransactionRecord SUCCESS":result2
-        });
+        console.log(result.Result.success)
+        if(!result.Result.success){
+            res.json({
+                updateWallet:{
+                    success:false,
+                    message:"User not enough money in wallet!"
+                } 
+               
+            })
+        }else{
+            console.log("Creating update record")
+            const result2= await createTransactionRecord(postData.buyerId,postData.sellerId,postData.listingId, postData.amount);
+            res.json({
+                updateWallet:result,
+                "createTransactionRecord SUCCESS":result2
+            });
+        }
+      
     } catch (error) {
         res.status(500).json({ error: "Error creating transaction record" });
     }
@@ -44,7 +57,7 @@ router.post('/boostListingPost', async (req, res) => {
         }
        
     } catch (error) {
-        res.status(500).json({ error: "Error creating transaction record" });
+        res.status(500).json({ error: "Error with boosting api" });
     }
     
 })
