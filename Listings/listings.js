@@ -1,6 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const firebaseAdmin = require('firebase-admin');
+const { v4: uuidv4 } = require('uuid');
+
 
 // Initialize Firebase Admin SDK
 const serviceAccount = require('./serviceAccountKeyListings.json');
@@ -11,22 +13,23 @@ firebaseAdmin.initializeApp({
 
 const db = firebaseAdmin.database();
 const app = express();
-const port = 3001;
+const port = 9999;
 
 //Add listing with new key based on existing data
 function addListing(listing) {
-  return db.ref('listings').once('value')
-    .then(snapshot => {
-      const listings = snapshot.val();
-      let lastListingId = 0;
+  try{
+  // return db.ref('listings').once('value')
+  //   .then(snapshot => {
+  //     const listings = snapshot.val();
+  //     let lastListingId = 0;
 
       //Check for existing listings
-      if (listings) {
-        const listingIds = Object.keys(listings);
-        lastListingId = Math.max(...listingIds);
-      }
+      // if (listings) {
+      //   const listingIds = Object.keys(listings);
+      //   lastListingId = Math.max(...listingIds);
+      // }
       
-      const newListingKey = ++lastListingId;
+      // const newListingKey = ++lastListingId;
       const dateTimeCreated = new Date(Date.now())
       
       // Default values
@@ -40,17 +43,18 @@ function addListing(listing) {
       listing.boosted = false;
       listing.transactionStatus = false;
 
-      
+      const newListingKey = uuidv4();
+
       return db.ref(`listings/${newListingKey}`).set(listing)
         .then(() => {
           console.log('Listing added successfully with key:', newListingKey);
           return newListingKey; // Return the new listing key
         });
-    })
-    .catch(error => {
+    }
+    catch(error) {
       console.error('Error adding item:', error);
       throw error;
-    });
+    };
 }
 
 // Middleware to parse JSON bodies
