@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 
 //service methods//
-const { createListing,getUser} = require('./service');
+const { createListing,getUser,sendEmail} = require('./service');
 
 // define the about route
 router.post('/createListing',async (req, res) => {
@@ -24,7 +24,10 @@ router.post('/createListing',async (req, res) => {
       }
     // const result = await createListing(listing);
     const result2 =await getUser(postData.sellerId);
-    res.status(200).json({'listing created bruh':result2})
+    console.log(result2.AuctionUsers[0].email,"USERRRRRR")
+    sendEmail(result2.AuctionUsers[0].email)
+    res.status(200).json({'data':result2})
+
   }catch(error){
     console.log("error",error.message)
   }

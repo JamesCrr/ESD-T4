@@ -123,3 +123,18 @@ services:
       - "3015:3000"
     networks:
       - own-net
+
+  createlisting-complex:
+    build: ./createlisting-complex
+    container_name: createlisting-complex
+    ports:
+      - "3030:4099"
+    networks:
+      - own-net
+  payment-complex:
+    build: ./payment-complex
+    container_name: payment-complex
+    ports:
+      - "3031:4098"
+    networks:
+      - own-net
