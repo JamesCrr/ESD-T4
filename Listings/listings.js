@@ -79,17 +79,38 @@ app.get('/getListing/:listingId', (req, res) => {
     });
 });
 
-// GET listings based on Buyer ID
-app.get('/getListingsByBuyer/:buyerId', (req, res) => {
-  const buyerId = req.params.buyerId;
+// GET listings based on Seller ID
+app.get('/getListingsBySeller/:sellerId', (req, res) => {
+  const sellerId = req.params.sellerId;
   db.ref('listings')
-    .orderByChild('buyerId')
-    .equalTo(parseInt(buyerId)) // Convert to integer if necessary
+    .orderByChild('sellerId')
+    .equalTo(sellerId) // Filter listings by sellerId
     .once('value')
     .then(snapshot => {
       const listings = snapshot.val();
       if (!listings || Object.keys(listings).length === 0) {
-        res.status(404).json({ error: 'No listings found for the specified buyer' });
+        res.status(404).json({ error: 'No listings found for the specified seller' });
+      } else {
+        const listingsArray = Object.values(listings);
+        res.json(listingsArray);
+      }
+    })
+    .catch(error => {
+      res.status(500).json({ error: error.message });
+    });
+});
+
+// GET listings based on Buyer ID
+app.get('/getListingsBySeller/:buyerId', (req, res) => {
+  const buyerId = req.params.buyerId;
+  db.ref('listings')
+    .orderByChild('buyerId')
+    .equalTo(buyerId) // Filter listings by buyerId
+    .once('value')
+    .then(snapshot => {
+      const listings = snapshot.val();
+      if (!listings || Object.keys(listings).length === 0) {
+        res.status(404).json({ error: 'No listings found for the specified seller' });
       } else {
         const listingsArray = Object.values(listings);
         res.json(listingsArray);
