@@ -10,55 +10,70 @@ volumes:
   frontend_node_modules:
 
 services:
-  backend:
-    build: ./backend
-    container_name: backend
-    networks:
-      - own-net
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./backend:/app
-      - ./backend/node_modules:/app/node_modules
+  # Remove this service before submitting!
+  #######################################################################
+  # backend:
+  #   build: ./backend
+  #   container_name: backend
+  #   networks:
+  #     - own-net
+  #   ports:
+  #     - "3000:3000"
+  #   volumes:
+  #     - ./backend:/app
+  #     - ./backend/node_modules:/app/node_modules
 
-  frontend:
-    build: ./frontend
-    container_name: frontend
-    networks:
-      - own-net
-    ports:
-      - "5173:5173"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    command: npm run dev
-    depends_on:
-      - backend
+  # ping-backend:
+  #   build: ./ping-backend
+  #   container_name: ping-backend
+  #   networks:
+  #     - own-net
+  #   # ports:
+  #   #   - "4000:4000"
+  #   volumes:
+  #     - ./ping-backend:/app
+  #     - /app/node_modules
+  #   command: npm start
+  #   depends_on:
+  #     - frontend
 
-  ping-backend:
-    build: ./ping-backend
-    container_name: ping-backend
-    networks:
-      - own-net
-    # ports:
-    #   - "4000:4000"
-    volumes:
-      - ./ping-backend:/app
-      - /app/node_modules
-    command: npm start
-    depends_on:
-      - frontend
+  # # ONLY FOR TESTING SENDING TO RABBITMQ
+  # sender:
+  #   build: ./send-notification
+  #   container_name: send-notification
+  #   hostname: send-notification
+  #   ports:
+  #     - "5001:5001"
+  #   networks:
+  #     - own-net
+  #   depends_on:
+  #     - emailer
+  #######################################################################
+
+  # frontend:
+  #   build: ./frontend
+  #   container_name: frontend
+  #   networks:
+  #     - own-net
+  #   ports:
+  #     - "5173:5173"
+  #   volumes:
+  #     - ./frontend:/app
+  #     - /app/node_modules
+  #   command: npm run dev
+  #   depends_on:
+  #     - backend
 
   transactions_backend:
     build: ./transactions_backend
-    container_name: transactions_backend
+    container_name: transactionsbackend
     networks:
       - own-net
     ports:
       - "8000:8000"
 
-  flask_app:
-    build: ./bid_microservice
+  bid_microservice:
+    build: ./bid_microservice/service
     container_name: bid_microservice
     networks:
       - own-net
@@ -92,24 +107,44 @@ services:
   #   hostname: emailer
   #   networks:
   #     - own-net
+  #   environment:
+  #     - PYTHONUNBUFFERED=1
   #   depends_on:
   #     - notification-rabbitmq
 
-  # sender:
-  #   build: ./send-notification
-  #   container_name: send-notification
-  #   hostname: send-notification
+  listings:
+    build: ./Listings
+    container_name: listings
+    ports:
+      - "9999:9999"
+    networks:
+      - own-net
+    volumes:
+      - ./Listings/serviceAccountKeyListings.json:/usr/src/app/serviceAccountKeyListings.json
+
+  # bid-for-listing-complex:
+  #   build: ./bid-for-listing-complex
+  #   container_name: bid-for-listing-complex
+  #   environment:
+  #     - LISTING_SIMPLE_PORT_NUM=3001
+  #     - BID_SIMPLE_PORT_NUM=3012
   #   ports:
-  #     - "5001:5001"
+  #     - "3015:3000"
   #   networks:
   #     - own-net
-  #   depends_on:
-  #     - emailer
 
-  # listings:
-  #   build: ./Listings
-  #   container_name: listings
-  #   ports:
-  #     - "3001:3001"
-  #   volumes:
-  #     - ./Listings/serviceAccountKeyListings.json:/usr/src/app/serviceAccountKeyListings.json
+  createlisting-complex:
+    build: ./createlisting-complex
+    container_name: createlisting-complex
+    ports:
+      - "3030:4099"
+    networks:
+      - own-net
+
+  payment-complex:
+    build: ./payment-complex
+    container_name: payment-complex
+    ports:
+      - "3031:4098"
+    networks:
+      - own-net

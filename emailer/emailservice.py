@@ -31,21 +31,21 @@ dataTemplate = {
   ]
 }
 
-def sendEmail(targetEmail, username):
+def sendEmail(targetEmail, username, subject, htmlcontent):
   # Create new data to send over
   newData = copy.deepcopy(dataTemplate)
   newData["Messages"][0]["To"][0]["Email"] = targetEmail
   newData["Messages"][0]["To"][0]["Name"] = username
-  newData["Messages"][0]["Subject"] = "Bid Confirmed!"
+  newData["Messages"][0]["Subject"] = subject
   newData["Messages"][0]["HTMLPart"] = f"""
   <div>
-    <h3>Dear {username}, welcome to <a href=\"https://www.mailjet.com/\">Mailjet</a>!</h3>
+    <h3>Dear {username},</h3>
     <br />
     <div>
         <img src="https://img.wattpad.com/cover/106286575-288-k371082.jpg" alt="" width="200" height="300" style="display: block; margin: auto;"> 
     </div>
 
-    <p>Your order has been heard!</p>
+    {htmlcontent}
   </div>
   """
 
