@@ -80,6 +80,15 @@ services:
     ports:
       - "3012:3012"
 
+  show_listing:
+    build: ./show_listing
+    container_name: show_listing
+    networks:
+      - own-net
+    ports:
+      - "3013:3013"
+   
+
   # notification-rabbitmq:
   #   image: rabbitmq:3-management
   #   container_name: notification-rabbitmq
