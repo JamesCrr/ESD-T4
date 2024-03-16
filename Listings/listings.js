@@ -20,21 +20,11 @@ app.use(cors())
 //Add listing with new key based on existing data
 function addListing(listing) {
   try{
-  // return db.ref('listings').once('value')
-  //   .then(snapshot => {
-  //     const listings = snapshot.val();
-  //     let lastListingId = 0;
-
-      //Check for existing listings
-      // if (listings) {
-      //   const listingIds = Object.keys(listings);
-      //   lastListingId = Math.max(...listingIds);
-      // }
-      
-      // const newListingKey = ++lastListingId;
+      const newListingKey = uuidv4();
       const dateTimeCreated = new Date(Date.now())
       
       // Default values
+      listing.id = newListingKey;
       listing.dateTimeCreated = dateTimeCreated.toISOString();
       listing.buyerId = "";
       listing.autionEndDateTime = "";
@@ -44,8 +34,6 @@ function addListing(listing) {
       listing.status = true;
       listing.boosted = false;
       listing.transactionStatus = false;
-
-      const newListingKey = uuidv4();
 
       return db.ref(`listings/${newListingKey}`).set(listing)
         .then(() => {
