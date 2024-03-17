@@ -24,12 +24,11 @@ function addListing(listing) {
       const dateTimeCreated = new Date(Date.now())
       
       // Default values
-      listing.id = newListingKey;
+      listing.listingId = newListingKey;
       listing.dateTimeCreated = dateTimeCreated.toISOString();
       listing.buyerId = "";
       listing.autionEndDateTime = "";
       listing.transactionEndDateTime = "";
-      listing.highestBid = 0;
       listing.highestBidder = "";
       listing.status = true;
       listing.boosted = false;
@@ -37,6 +36,7 @@ function addListing(listing) {
 
       return db.ref(`listings/${newListingKey}`).set(listing)
         .then(() => {
+          listing.highestBid = listing.startBid;
           console.log('Listing added successfully with key:', newListingKey);
           return newListingKey; // Return the new listing key
         });
@@ -129,7 +129,7 @@ app.get('/getAllListings', (req, res) => {
 
 // POST Create listing
 app.post('/createListing', (req, res) => {
-  const allowedParams = ['name', 'description', 'sellerId', 'startBid'];
+  const allowedParams = ['listingName', 'listingDescription', 'sellerId', 'startBid'];
   const newListing = req.body;
   
   // Check if ALL required parameters present in request body
@@ -151,16 +151,16 @@ app.post('/createListing', (req, res) => {
 // PUT Update listing, partial update
 app.put('/updateListing/:listingId', (req, res) => {
   const listingId = req.params.listingId;
-  const allowedParams = ['name', 'description', 'buyerId','highestBid', 'highestBidder', 'status', 'transactionEndDateTime', 
-                        'autionEndDateTime', 'status', 'transactionStatus', 'boosted'];
+  // const allowedParams = ['name', 'description', 'buyerId','highestBid', 'highestBidder', 'status', 'transactionEndDateTime', 
+  //                       'autionEndDateTime', 'status', 'transactionStatus', 'boosted'];
   const updatedListing = req.body;
 
   // Check if all parameters in the request body are allowed
-  const isValid = Object.keys(updatedListing).every(param => allowedParams.includes(param));
+  // const isValid = Object.keys(updatedListing).every(param => allowedParams.includes(param));
   
-  if (!isValid) {
-    return res.status(400).json({ error: 'Invalid parameters in the request body' });
-  }
+  // if (!isValid) {
+  //   return res.status(400).json({ error: 'Invalid parameters in the request body' });
+  // }
 
   db.ref(`listings/${listingId}`).update(updatedListing)
     .then(() => {

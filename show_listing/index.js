@@ -1,9 +1,12 @@
 const express = require("express");
+const cors = require("cors");
 const app = express();
 const axios = require("axios");
 const port = 3013;
 
-const listingEndpoint = "http://host.docker.internal:3001/getAllListings";
+app.use(cors());
+
+const listingEndpoint = "http://host.docker.internal:9999/getAllListings";
 const userEndpoint =
   "https://personal-swk23gov.outsystemscloud.com/User_API/rest/v1/user?userId=";
 

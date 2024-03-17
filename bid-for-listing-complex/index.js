@@ -11,7 +11,7 @@ app.use(bodyParser.json());
 
 // API Endpoints
 const userEndpointURL = "https://personal-swk23gov.outsystemscloud.com/User_API/rest/v1/user";
-const listingPortNum = process.env.LISTING_SIMPLE_PORT_NUM || 3001;
+const listingPortNum = process.env.LISTING_SIMPLE_PORT_NUM || 9999;
 const listingEndpointURL = "http://listings:" + listingPortNum;
 const bidPortNum = process.env.BID_SIMPLE_PORT_NUM || 3012;
 const bidEndpointURL = "http://bid_microservice:" + bidPortNum;
@@ -119,8 +119,9 @@ app.post("/", async function (req, res, next) {
     /**
      * HAARD CODING THE LISTING ID HERE TO 1
      */
-    // const response = await axios.get(listingEndpointURL + "/getListing/" + incomingBidInfo.listingId);
-    const response = await axios.get(listingEndpointURL + "/getListing/" + 1);
+    // const response = await axios.get(listingEndpointURL + "/getListing/" + 1);
+    const response = await axios.get(listingEndpointURL + "/getListing/" + incomingBidInfo.listingId);
+
     // console.log("Listing:", response.data);
     listingData = response.data;
   } catch (error) {
@@ -131,16 +132,18 @@ app.post("/", async function (req, res, next) {
 
   // PUT: Refund the previous highest bidder
   console.log("PUT: Refund the previous highest bidder");
-  walletData = {
-    userId: listingData.highestBidder,
-    updateAmount: listingData.highestBid,
-  };
-  try {
-    const response = await axios.put(userEndpointURL + "/wallet", walletData);
-  } catch (error) {
-    printAxiosError(error, "FAILED!! Refund the previous highest bidder");
-    res.status(500).json({ error: error.response?.data ? error.response.data : error.message });
-    return;
+  if(listingData.highestBidder !== ""){
+    walletData = {
+      userId: listingData.highestBidder,
+      updateAmount: listingData.highestBid,
+    };
+    try {
+      const response = await axios.put(userEndpointURL + "/wallet", walletData);
+    } catch (error) {
+      printAxiosError(error, "FAILED!! Refund the previous highest bidder");
+      res.status(500).json({ error: error.response?.data ? error.response.data : error.message });
+      return;
+    }
   }
 
   // PUT: Update Listing with new highest userId and bid price

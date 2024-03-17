@@ -89,28 +89,28 @@ services:
       - "3013:3013"
    
 
-  # notification-rabbitmq:
-  #   image: rabbitmq:3-management
-  #   container_name: notification-rabbitmq
-  #   hostname: notification-rabbitmq
-  #   networks:
-  #     - own-net
-  #   ports:
-  #     - "5672:5672"
-  #     - "15672:15672"
-  #   volumes:
-  #     - ./notification-rabbitmq/conf.d:/etc/rabbitmq/conf.d
+  notification-rabbitmq:
+    image: rabbitmq:3-management
+    container_name: notification-rabbitmq
+    hostname: notification-rabbitmq
+    networks:
+      - own-net
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - ./notification-rabbitmq/conf.d:/etc/rabbitmq/conf.d
 
-  # emailer:
-  #   build: ./emailer
-  #   container_name: emailer
-  #   hostname: emailer
-  #   networks:
-  #     - own-net
-  #   environment:
-  #     - PYTHONUNBUFFERED=1
-  #   depends_on:
-  #     - notification-rabbitmq
+  emailer:
+    build: ./emailer
+    container_name: emailer
+    hostname: emailer
+    networks:
+      - own-net
+    environment:
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - notification-rabbitmq
 
   listings:
     build: ./Listings
@@ -122,16 +122,16 @@ services:
     volumes:
       - ./Listings/serviceAccountKeyListings.json:/usr/src/app/serviceAccountKeyListings.json
 
-  # bid-for-listing-complex:
-  #   build: ./bid-for-listing-complex
-  #   container_name: bid-for-listing-complex
-  #   environment:
-  #     - LISTING_SIMPLE_PORT_NUM=3001
-  #     - BID_SIMPLE_PORT_NUM=3012
-  #   ports:
-  #     - "3015:3000"
-  #   networks:
-  #     - own-net
+  bid-for-listing-complex:
+    build: ./bid-for-listing-complex
+    container_name: bid-for-listing-complex
+    environment:
+      - LISTING_SIMPLE_PORT_NUM=9999
+      - BID_SIMPLE_PORT_NUM=3012
+    ports:
+      - "3015:3000"
+    networks:
+      - own-net
 
   createlisting-complex:
     build: ./createlisting-complex
