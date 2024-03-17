@@ -16,10 +16,9 @@ async function updateUserWallet(userId,amount){
     try{
         postData={
             userId: userId,
-            updateAmount:-amount
+            updateAmount:amount
         }
         const response= await axios.put('https://personal-swk23gov.outsystemscloud.com/User_API/rest/v1/user/wallet', postData)
-        console.log(response.data,"minusss")
         return response.data;
     }catch(error){
         console.log("Error",error)

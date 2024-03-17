@@ -25,6 +25,47 @@ async function getUser(userId){
     }
 }
 
+async function updateUserWallet(userId,amount){
+  try{
+      postData={
+          userId: userId,
+          updateAmount:-amount
+      }
+      const response= await axios.put('https://personal-swk23gov.outsystemscloud.com/User_API/rest/v1/user/wallet', postData)
+      console.log(response.data.Result.success,"SUCCESS OR NAH")
+      if(response.data.Result.success){
+        return true;
+      }else{
+        return false;
+      }
+  }catch(error){
+      console.log("Error",error)
+  }
+}
+
+async function createTransactionRecord(buyerId,listingId,amount){
+  const data = {
+      transactionId: uuid.v4(),
+      sellerId: "companyUUID",
+      buyerId: buyerId,
+      amount: amount,
+      listingId: listingId
+  }
+  const config = {
+      headers: {
+          'Content-Type': 'application/json'
+      }
+  }
+  try{
+      const response= await axios.post('http://transactionsbackend:8000/transactions/', data,config)
+      console.log('SUCCESS!:', response.data);
+      return response.data;
+      
+  }catch(error){
+      console.log("Error",error.message)
+  }
+}
+
 // Connect to RabbitMQ
 const queuehostName = "notification-rabbitmq";
 const exchangeName = "email_topic";
@@ -82,4 +123,4 @@ async function sendEmail(emailtarget){
       };
     sendMessageToQueue(channel, "email.listing", Buffer.from(JSON.stringify(message)));
 }
-module.exports = { createListing,getUser,sendEmail };
+module.exports = { createListing,getUser,sendEmail,updateUserWallet,createTransactionRecord };

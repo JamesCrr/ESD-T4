@@ -20,18 +20,6 @@ app.use(cors())
 //Add listing with new key based on existing data
 function addListing(listing) {
   try{
-  // return db.ref('listings').once('value')
-  //   .then(snapshot => {
-  //     const listings = snapshot.val();
-  //     let lastListingId = 0;
-
-      //Check for existing listings
-      // if (listings) {
-      //   const listingIds = Object.keys(listings);
-      //   lastListingId = Math.max(...listingIds);
-      // }
-      
-      // const newListingKey = ++lastListingId;
       const dateTimeCreated = new Date(Date.now())
       
       // Default values
@@ -120,7 +108,7 @@ app.get('/getAllListings', (req, res) => {
 
 // POST Create listing
 app.post('/createListing', (req, res) => {
-  const allowedParams = ['name', 'description', 'sellerId', 'startBid'];
+  const allowedParams = ['listingName', 'listingDescription', 'sellerId', 'startBid','listingImg'];
   const newListing = req.body;
   
   // Check if ALL required parameters present in request body
