@@ -10,7 +10,7 @@ router.post('/closeAuctionPost', async (req, res) => {
     const postData = req.body;
     if (postData.listingId === undefined || postData.sellerId === undefined || postData.buyerId === undefined || postData.highestBid === undefined) {
         // For example, you can send a 400 Bad Request response
-        return res.status(400).json({ error: 'The "name" parameter is not sent in the request body' });
+        return res.status(400).json({ error: "Missing required attributes in request body" });
       }
     try {
         const result = await updateUserWallet(postData.sellerId, postData.highestBid);

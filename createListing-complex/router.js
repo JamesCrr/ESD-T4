@@ -9,7 +9,7 @@ router.post('/createListing',async (req, res) => {
   const postData = req.body;
   if (postData.listingName===undefined || postData.listingDescription===undefined || postData.sellerId===undefined || postData.startBid===undefined || postData.boosted === undefined || postData.listingImg === undefined) {
     // If any required attribute is missing, send a 400 Bad Request response
-    return res.status(400).json({ error: 'Missing required attributes in body' });
+    return res.status(400).json({ error: 'Missing required attributes in request body' });
   }
   if(postData.boosted){
     try{
