@@ -80,6 +80,15 @@ services:
     ports:
       - "3012:3012"
 
+  show_listing:
+    build: ./show_listing
+    container_name: show_listing
+    networks:
+      - own-net
+    ports:
+      - "3013:3013"
+   
+
   notification-rabbitmq:
     image: rabbitmq:3-management
     container_name: notification-rabbitmq
@@ -117,7 +126,7 @@ services:
     build: ./bid-for-listing-complex
     container_name: bid-for-listing-complex
     environment:
-      - LISTING_SIMPLE_PORT_NUM=3001
+      - LISTING_SIMPLE_PORT_NUM=9999
       - BID_SIMPLE_PORT_NUM=3012
     ports:
       - "3015:3000"
