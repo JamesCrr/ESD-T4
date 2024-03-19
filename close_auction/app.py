@@ -1,5 +1,8 @@
 from flask import Flask, jsonify, request, abort
 import requests
+from datetime import datetime
+import pika
+import json
 
 app = Flask(__name__)
 
@@ -8,12 +11,16 @@ app = Flask(__name__)
 
 def close_auction():
 
+    error = ""
     #Get listing from url
     listingId = '37bc3e46-d1ec-4307-b0cd-514172e8d9a7'
 
     #Get highestBid, buyerId and sellerId from listing 
-    listing_service_url = 'http://localhost:3001/getListing/' + listingId
+    listing_service_url = 'http://localhost:9999/getListing/' + listingId
     response = requests.get(listing_service_url)
+
+    #check for response to do later
+
     data = response.json()
 
     #Store data for further use
@@ -23,43 +30,78 @@ def close_auction():
 
     #params needed for post following post request
     # params_json = {"highestBid": highestBid, "buyerId": buyerId, "sellerId": sellerId, "listingId":listingId}
-    params_json = {"highestBid": 100, "buyerId": "7f3b428f-050c-446b-ac9d-7176b3f11b14", "sellerId": "3ae1a890-fa30-47c3-ac70-6a282d492b4b", "listingId":"13213113dadsdasda"}
+    params_json = {"amount": 1, "buyerId": "7f3b428f-050c-446b-ac9d-7176b3f11b14", "sellerId": "3ae1a890-fa30-47c3-ac70-6a282d492b4b", "listingId":"13213113dadsdasda"}
 
     #Post request to payment complex microservice sending the listingid, userid of seller and buyer
     payment_service_url = 'http://localhost:3031/closeAuctionPost'
-    response = requests.post(payment_service_url, params_json)
+    response = requests.post(payment_service_url, json = params_json)
+
+    #check for response to do later
+    if response.status_code == 200:
+        print(response.json())
+
+    #update listing status
+    listing_service_url = 'http://localhost:9999/updateListing/' + listingId
+    date_time_created = datetime.now()
+    params_json = {"status": False,
+                   'autionEndDateTime': date_time_created.isoformat()
+    }
+    response = requests.put(listing_service_url, json = params_json)
 
     if response.status_code == 200:
         print(response.json())
 
-    # # Step 1: Send GET request to "Bid" microservice to get bidders' User IDs
-    # bid_service_url = 'http://localhost:3012/retrieve/all'
-    # response = requests.get(bid_service_url, params={'listing_id': listing_id})
-    # if response.status_code != 200:
-    #     abort(500)
+    #Get all bidders userid
+    bidding_service_url = "http://localhost:3012/retrieve/all"
 
-    # bidders = response.json().get('bidders')
+    #hardcoding listingId for now
+    listingId = "b9c6c471-227c-4b6e-8ee9-0c5536614c98"
+    params_json = {"listingId":listingId}
+    response = requests.get(bidding_service_url, params = params_json)
+    data = response.json()
+    print(data)
+    userIdList = []
+    for datafield in data:
+        userIdList.append(datafield["userId"])
+    print(userIdList)
 
-    # # Step 2: Send POST request to "Listing" microservice to update listing status
+    #update bidding status
+    bidding_service_url = "http://localhost:3012/update/bids/" + listingId
+    response = requests.patch(bidding_service_url)
+    if response.status_code != 201:
+        return error
+
+    #get all emails
+    user_service_url = "https://personal-swk23gov.outsystemscloud.com/User_API/rest/v1/users"
+    emailList = []
+    #hardcoding userids for now
+    params_json = {"userIds": ["3ae1a890-fa30-47c3-ac70-6a282d492b4b","7f3b428f-050c-446b-ac9d-7176b3f11b14", "87ade5fc-7483-40ea-9a5a-8b2806a1211d"]}
+    response = requests.post(user_service_url, json = params_json)
+    if response.status_code == 200:
+        data = response.json()["AuctionUsers"]
+        for user in data:
+            emailList.append(user["email"])
+
+    #send email
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', port=5672))
+    channel = connection.channel()
+
+    # Declare the exchange if not already declared
+    channel.exchange_declare(exchange='email_topic', exchange_type='topic', durable=True)
     
+    email_message = {
+        "emailType": "AuctionEnded",
+        "emailTarget": "jinkanglim23@gmail.com",
+        "emailTitle": "Auction concluded!",
+        "emailContent": "",
+        "senderUserObject": {
+            "username": "Pepe the frog"
+        }
+    }
 
-    # # Step 3: Send GET request to "User" microservice to get bidders' contact information
-    # user_service_url = 'http://user-service-url/get-contact-info'
-    # response = requests.get(user_service_url, params={'bidders': bidders})
-    # if response.status_code != 200:
-    #     abort(500)
+    channel.basic_publish(exchange='email_topic', routing_key='email.listing', body=json.dumps(email_message))
 
-    # contact_info = response.json().get('contact_info')
-
-    # # Step 4: Dispatch AMQP request to notify bidders
-    # notification_service_url = 'http://notification-service-url/notify-bidders'
-    # amqp_payload = {
-    #     'listing_id': listing_id,
-    #     'contact_info': contact_info
-    # }
-    # response = requests.post(notification_service_url, json=amqp_payload)
-    # if response.status_code != 200:
-    #     abort(500)
+    print(f"Message sent: {email_message} to email_topic with routing key of email.listing")
 
     return jsonify({'message': 'Auction closed successfully'})
 
