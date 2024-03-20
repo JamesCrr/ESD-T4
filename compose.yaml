@@ -99,8 +99,12 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    # volumes:
+    #   - ./notification-rabbitmq/conf.d:/etc/rabbitmq/conf.d
     volumes:
-      - ./notification-rabbitmq/conf.d:/etc/rabbitmq/conf.d
+      - ./rabbitmq.config:/etc/rabbitmq/rabbitmq.config
+      - ./rabbitmq_definitions.json:/etc/rabbitmq/rabbitmq_definitions.json
+      - rabbitmq_data:/var/lib/rabbitmq
 
   emailer:
     build: ./emailer
@@ -120,12 +124,8 @@ services:
       - "9999:9999"
     networks:
       - own-net
-    # volumes:
-    #   - ./Listings/serviceAccountKeyListings.json:/usr/src/app/serviceAccountKeyListings.json
     volumes:
-      - ./rabbitmq.config:/etc/rabbitmq/rabbitmq.config
-      - ./rabbitmq_definitions.json:/etc/rabbitmq/rabbitmq_definitions.json
-      - rabbitmq_data:/var/lib/rabbitmq
+      - ./Listings/serviceAccountKeyListings.json:/usr/src/app/serviceAccountKeyListings.json
 
   bid-for-listing-complex:
     build: ./bid-for-listing-complex
