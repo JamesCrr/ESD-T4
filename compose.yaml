@@ -102,8 +102,8 @@ services:
     # volumes:
     #   - ./notification-rabbitmq/conf.d:/etc/rabbitmq/conf.d
     volumes:
-      - ./rabbitmq.config:/etc/rabbitmq/rabbitmq.config
-      - ./rabbitmq_definitions.json:/etc/rabbitmq/rabbitmq_definitions.json
+      - ./notification-rabbitmq/rabbitmq.config:/etc/rabbitmq/rabbitmq.config
+      - ./notification-rabbitmq/rabbitmq_definitions.json:/etc/rabbitmq/rabbitmq_definitions.json
       - rabbitmq_data:/var/lib/rabbitmq
 
   emailer:
