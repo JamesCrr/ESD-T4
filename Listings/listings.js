@@ -33,10 +33,10 @@ function addListing(listing) {
       listing.status = true;
       listing.boosted = false;
       listing.transactionStatus = false;
+      listing.highestBid = listing.startBid;
 
       return db.ref(`listings/${newListingKey}`).set(listing)
         .then(() => {
-          listing.highestBid = listing.startBid;
           console.log('Listing added successfully with key:', newListingKey);
           return newListingKey; // Return the new listing key
         });
