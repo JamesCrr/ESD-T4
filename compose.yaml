@@ -6,11 +6,12 @@ networks:
     driver: bridge
 
 volumes:
-  backend_node_modules:
+  rabbitmq_data:
   frontend_node_modules:
 
 services:
-  # Remove this service before submitting!
+  # Remove this section before submitting!
+  #######################################################################
   #######################################################################
   # backend:
   #   build: ./backend
@@ -48,6 +49,7 @@ services:
   #     - own-net
   #   depends_on:
   #     - emailer
+  #######################################################################
   #######################################################################
 
   # frontend:
@@ -87,7 +89,6 @@ services:
       - own-net
     ports:
       - "3013:3013"
-   
 
   notification-rabbitmq:
     image: rabbitmq:3-management
@@ -119,8 +120,12 @@ services:
       - "9999:9999"
     networks:
       - own-net
+    # volumes:
+    #   - ./Listings/serviceAccountKeyListings.json:/usr/src/app/serviceAccountKeyListings.json
     volumes:
-      - ./Listings/serviceAccountKeyListings.json:/usr/src/app/serviceAccountKeyListings.json
+      - ./rabbitmq.config:/etc/rabbitmq/rabbitmq.config
+      - ./rabbitmq_definitions.json:/etc/rabbitmq/rabbitmq_definitions.json
+      - rabbitmq_data:/var/lib/rabbitmq
 
   bid-for-listing-complex:
     build: ./bid-for-listing-complex

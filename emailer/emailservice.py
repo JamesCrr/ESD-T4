@@ -40,14 +40,14 @@ def sendEmail(targetEmail, username, subject, htmlcontent):
   newData["Messages"][0]["HTMLPart"] = f"""
   <div>
     <h3>Dear {username},</h3>
-    <br />
-    <div>
-        <img src="https://img.wattpad.com/cover/106286575-288-k371082.jpg" alt="" width="200" height="300" style="display: block; margin: auto;"> 
-    </div>
 
     {htmlcontent}
   </div>
   """
+  #  <br />
+  #   <div>
+  #       <img src="https://img.wattpad.com/cover/106286575-288-k371082.jpg" alt="" width="200" height="300" style="display: block; margin: auto;"> 
+  #   </div>
 
   # Send the email 
   result = mailjet.send.create(data=newData)

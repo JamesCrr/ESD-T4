@@ -62,9 +62,10 @@ let channel = undefined;
  * @param {String} message
  */
 async function sendMessageToQueue(channel, routingKey, message) {
+  const options = { persistent: true };
   try {
     // Publish the message to the exchange with the specified routing key
-    await channel.publish(exchangeName, routingKey, message);
+    await channel.publish(exchangeName, routingKey, message, options);
     console.log(`Message sent: ${JSON.stringify(message)} to ${exchangeName} with routing key of ${routingKey}`);
   } catch (err) {
     console.error("Error sending message:", err.message);
@@ -132,7 +133,7 @@ app.post("/", async function (req, res, next) {
 
   // PUT: Refund the previous highest bidder
   console.log("PUT: Refund the previous highest bidder");
-  if(listingData.highestBidder !== ""){
+  if (listingData.highestBidder !== "") {
     walletData = {
       userId: listingData.highestBidder,
       updateAmount: listingData.highestBid,
