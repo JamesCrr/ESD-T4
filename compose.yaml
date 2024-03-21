@@ -137,6 +137,10 @@ services:
       - "3015:3000"
     networks:
       - own-net
+    depends_on:
+      - notification-rabbitmq
+      - listings
+      - bid_microservice
 
   createlisting-complex:
     build: ./createlisting-complex
@@ -153,7 +157,7 @@ services:
       - "3031:4098"
     networks:
       - own-net
-  
+
   vue:
     build: ./esdUi
     container_name: esdUi

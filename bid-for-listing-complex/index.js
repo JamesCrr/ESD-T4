@@ -21,6 +21,9 @@ const queuehostName = "notification-rabbitmq";
 const exchangeName = "email_topic";
 let connection = undefined;
 let channel = undefined;
+/**
+ * Helper function to connect to RabbitMQ
+ */
 (async () => {
   let retryCount = 0;
   const delayRetrySeconds = 2;
@@ -98,7 +101,6 @@ app.post("/", async function (req, res, next) {
 
   // PUT: Update user wallet
   console.log("PUT: Update user wallet");
-  let updatedAuctionUser = {};
   let walletData = {
     userId: incomingBidInfo.userId,
     updateAmount: -incomingBidInfo.bidPrice,
@@ -117,16 +119,19 @@ app.post("/", async function (req, res, next) {
   console.log("GET: Get Listing highest bid");
   let listingData = {};
   try {
-    /**
-     * HAARD CODING THE LISTING ID HERE TO 1
-     */
-    // const response = await axios.get(listingEndpointURL + "/getListing/" + 1);
     const response = await axios.get(listingEndpointURL + "/getListing/" + incomingBidInfo.listingId);
 
     // console.log("Listing:", response.data);
     listingData = response.data;
   } catch (error) {
     printAxiosError(error, "FAILED!! Get Listing highest bid");
+    // Undo deduct from user Wallet
+    walletData = {
+      userId: incomingBidInfo.userId,
+      updateAmount: incomingBidInfo.bidPrice,
+    };
+    await axios.put(userEndpointURL + "/wallet", walletData);
+
     res.status(500).json({ error: error.message });
     return;
   }
@@ -142,6 +147,13 @@ app.post("/", async function (req, res, next) {
       const response = await axios.put(userEndpointURL + "/wallet", walletData);
     } catch (error) {
       printAxiosError(error, "FAILED!! Refund the previous highest bidder");
+      // Undo deduct from user Wallet
+      walletData = {
+        userId: incomingBidInfo.userId,
+        updateAmount: incomingBidInfo.bidPrice,
+      };
+      await axios.put(userEndpointURL + "/wallet", walletData);
+
       res.status(500).json({ error: error.response?.data ? error.response.data : error.message });
       return;
     }
@@ -149,13 +161,29 @@ app.post("/", async function (req, res, next) {
 
   // PUT: Update Listing with new highest userId and bid price
   console.log("PUT: Update Listing with new highest userId and bid price");
-  listingData.highestBid = incomingBidInfo.bidPrice;
-  listingData.highestBidder = incomingBidInfo.userId;
+  const newListingData = { ...listingData };
+  newListingData.highestBid = incomingBidInfo.bidPrice;
+  newListingData.highestBidder = incomingBidInfo.userId;
   try {
-    const response = await axios.put(listingEndpointURL + "/updateListing/" + listingData.id, listingData);
+    const response = await axios.put(listingEndpointURL + "/updateListing/" + newListingData.id, newListingData);
     // console.log("Listing:", response.data);
   } catch (error) {
     printAxiosError(error, "FAILED!! Send new Bid details into Bidding DB");
+    // Undo deduct from user Wallet
+    walletData = {
+      userId: incomingBidInfo.userId,
+      updateAmount: incomingBidInfo.bidPrice,
+    };
+    await axios.put(userEndpointURL + "/wallet", walletData);
+    // Undo refund previous highest bidder
+    if (listingData.highestBidder !== "") {
+      walletData = {
+        userId: listingData.highestBidder,
+        updateAmount: -listingData.highestBid,
+      };
+      await axios.put(userEndpointURL + "/wallet", walletData);
+    }
+
     res.status(500).json({ error: error.message });
     return;
   }
@@ -172,6 +200,23 @@ app.post("/", async function (req, res, next) {
     // console.log("Listing:", response.data);
   } catch (error) {
     printAxiosError(error, "FAILED!! Send new Bid details into Bidding DB");
+    // Undo deduct from user Wallet
+    walletData = {
+      userId: incomingBidInfo.userId,
+      updateAmount: incomingBidInfo.bidPrice,
+    };
+    await axios.put(userEndpointURL + "/wallet", walletData);
+    // Undo refund previous highest bidder
+    if (listingData.highestBidder !== "") {
+      walletData = {
+        userId: listingData.highestBidder,
+        updateAmount: -listingData.highestBid,
+      };
+      await axios.put(userEndpointURL + "/wallet", walletData);
+    }
+    // Undo update listing with new highest userId and bid price
+    await axios.put(listingEndpointURL + "/updateListing/" + listingData.id, listingData);
+
     res.status(500).json({ error: error.message });
     return;
   }
