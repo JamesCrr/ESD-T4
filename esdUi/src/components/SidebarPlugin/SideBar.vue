@@ -5,7 +5,6 @@
     :data-image="sidebarBackgroundImage"
     :style="sidebarStyle"
   >
-
     <div class="sidebar-wrapper">
       <slot name="content"></slot>
       <md-list class="nav">

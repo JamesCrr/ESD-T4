@@ -7,11 +7,4 @@ import StatsCard from "./Cards/StatsCard.vue";
 import HomeListings from "./Tables/HomeListings.vue";
 import ListingsSeller from "./Tables/ListingsSeller.vue";
 
-export {
-  ChartCard,
-  NavTabsCard,
-  StatsCard,
-
-  HomeListings,
-  ListingsSeller,
-};
+export { ChartCard, NavTabsCard, StatsCard, HomeListings, ListingsSeller };

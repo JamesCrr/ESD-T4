@@ -153,3 +153,12 @@ services:
       - "3031:4098"
     networks:
       - own-net
+  
+  vue:
+    build: ./esdUi
+    container_name: esdUi
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+    command: ["npm", "run", "serve", "--", "--port", "8080"]

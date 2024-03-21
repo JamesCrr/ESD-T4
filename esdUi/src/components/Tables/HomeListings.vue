@@ -60,7 +60,7 @@
                 this.listings = data;
             })
             .catch(error => {
-              console.error("Error fetching listings:", error);
+              //console.error("Error fetching listings:", error);
               this.message = "Error fetching listings. Please try again later.";
             });
         },
@@ -105,12 +105,12 @@
             }
           })
           .catch(error => {
-            console.error('Error creating bid:', error);
+            //console.error('Error creating bid:', error);
             this.errorMessage = "Error creating bid. Please try again later.";
             //document.getElementById("errorMessage").style.display = "block";
           });
           
-          console.log(`Bid submitted for ${listingId}: $${newBid}`);
+          //console.log(`Bid submitted for ${listingId}: $${newBid}`);
           this.selectedListingId = null;
           // Close the modal
           //$('#bidModal').modal('hide');

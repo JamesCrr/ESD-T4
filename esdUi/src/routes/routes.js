@@ -6,7 +6,6 @@ import Listings from "@/pages/Listings.vue";
 import Bids from "@/pages/Bids.vue";
 import CreateAuction from "@/pages/CreateAuction.vue";
 
-
 const routes = [
   {
     path: "/",
