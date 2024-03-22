@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
+    'django.contrib.staticfiles',  # required for serving swagger ui's css/js files
+    'drf_yasg',  
     
     # 'django.contrib.sessions',
     'django.contrib.messages',
