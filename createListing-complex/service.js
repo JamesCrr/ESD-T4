@@ -114,7 +114,7 @@ async function sendMessageToQueue(channel, routingKey, message) {
 async function sendEmail(emailtarget){
     let message = {
         emailType: "listingCreated",
-        emailTarget: "jonathanlee54211@gmail.com",
+        emailTarget: "jonathanlee3800@gmail.com",
         emailTitle: "Listing Created!",
         emailContent: "<p>Your Listing has been Created!</p>",
         senderUserObject: {

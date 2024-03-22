@@ -163,6 +163,8 @@ services:
     container_name: esdUi
     ports:
       - "8080:8080"
+    networks:
+      - own-net
     environment:
       - NODE_ENV=production
     command: ["npm", "run", "serve", "--", "--port", "8080"]

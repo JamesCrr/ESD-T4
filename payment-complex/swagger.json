@@ -1,0 +1,90 @@
+{
+    "swagger": "2.0",
+    "info": {
+      "version": "1.0.0",
+      "title": "Transaction Backend API",
+      "description": "API documentation for the Transaction Backend microservice"
+    },
+    "basePath": "/api",
+    "schemes": [
+      "http",
+      "https"
+    ],
+    "paths": {
+      "/closeAuctionPost": {
+        "post": {
+          "summary": "Close Auction Post",
+          "description": "Close auction post and update user wallet and transaction record",
+          "parameters": [
+            {
+              "name": "body",
+              "in": "body",
+              "description": "Data required for closing auction post",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "listingId": {
+                    "type": "string"
+                  },
+                  "sellerId": {
+                    "type": "string"
+                  },
+                  "buyerId": {
+                    "type": "string"
+                  },
+                  "highestBid": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful operation",
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "Result": {
+                    "type": "object",
+                    "properties": {
+                      "updateWallet": {
+                        "type": "string"
+                      },
+                      "transactionRecord": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  

@@ -1,0 +1,97 @@
+{
+    "swagger": "2.0",
+    "info": {
+      "version": "1.0.0",
+      "title": "Listing API",
+      "description": "API documentation for creating listings"
+    },
+    "basePath": "/api",
+    "schemes": [
+      "http",
+      "https"
+    ],
+    "paths": {
+      "/createListing": {
+        "post": {
+          "summary": "Create a new listing",
+          "description": "Create a new listing with the provided details",
+          "consumes": [
+            "application/json"
+          ],
+          "produces": [
+            "application/json"
+          ],
+          "parameters": [
+            {
+              "in": "body",
+              "name": "body",
+              "description": "Listing details",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "listingName": {
+                    "type": "string"
+                  },
+                  "listingDescription": {
+                    "type": "string"
+                  },
+                  "listingImg": {
+                    "type": "string"
+                  },
+                  "sellerId": {
+                    "type": "string"
+                  },
+                  "startBid": {
+                    "type": "number"
+                  },
+                  "boosted": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful operation",
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "result": {
+                    "type": "object",
+                    "properties": {
+                      "transactionID": {
+                        "type": "string"
+                      },
+                      "listing": {
+                        "type": "string"
+                      },
+                      "user": {
+                        "type": "array",
+                        "items": {
+                          "type": "object"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "error": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
