@@ -1,3 +1,4 @@
+const swaggerDocs = require("./swagger.js");
 const express = require("express");
 const axios = require("axios");
 const bodyParser = require("body-parser");
@@ -53,6 +54,7 @@ let channel = undefined;
   app.listen(port, function () {
     console.log("Web server listening on port " + port);
   });
+  swaggerDocs(app, port);
 
   // Close the connection when done
   // await connection.close();
@@ -95,7 +97,35 @@ const printAxiosError = (error, customConsoleMessage) => {
   }
 };
 
-// Bid for Listing
+/** POST Methods */
+/**
+ * @openapi
+ * '/':
+ *  post:
+ *     summary: Complex Microservice Bid for a Listing
+ *     requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *           schema:
+ *            type: object
+ *            required:
+ *              - userId
+ *              - listingId
+ *              - bidPrice
+ *            properties:
+ *              userId:
+ *                type: string
+ *              listingId:
+ *                type: string
+ *              bidPrice:
+ *                type: integer
+ *     responses:
+ *      201:
+ *        description: Created
+ *      500:
+ *        description: Server Error
+ */
 app.post("/", async function (req, res, next) {
   const incomingBidInfo = req.body;
 
