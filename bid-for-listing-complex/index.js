@@ -129,6 +129,16 @@ const printAxiosError = (error, customConsoleMessage) => {
 app.post("/", async function (req, res, next) {
   const incomingBidInfo = req.body;
 
+  if (
+    incomingBidInfo === undefined ||
+    incomingBidInfo.bidPrice === undefined ||
+    Number(incomingBidInfo?.bidPrice) === NaN
+  ) {
+    console.log("FAILED!! bidPrice is not a number!");
+    res.status(500).json({ error: "FAILED!! bidPrice is not a number!" });
+    return;
+  }
+
   // PUT: Update user wallet
   console.log("PUT: Update user wallet");
   let walletData = {
@@ -192,10 +202,10 @@ app.post("/", async function (req, res, next) {
   // PUT: Update Listing with new highest userId and bid price
   console.log("PUT: Update Listing with new highest userId and bid price");
   const newListingData = { ...listingData };
-  newListingData.highestBid = incomingBidInfo.bidPrice;
+  newListingData.highestBid = Number(incomingBidInfo.bidPrice);
   newListingData.highestBidder = incomingBidInfo.userId;
   try {
-    const response = await axios.put(listingEndpointURL + "/updateListing/" + newListingData.id, newListingData);
+    const response = await axios.put(listingEndpointURL + "/updateListing/" + newListingData.listingId, newListingData);
     // console.log("Listing:", response.data);
   } catch (error) {
     printAxiosError(error, "FAILED!! Send new Bid details into Bidding DB");
@@ -222,12 +232,13 @@ app.post("/", async function (req, res, next) {
   console.log("POST: Send new Bid details into Bidding DB");
   let newBidDataObject = {
     bidAmt: incomingBidInfo.bidPrice,
-    listingId: listingData.id,
+    listingId: listingData.listingId,
     userId: incomingBidInfo.userId,
   };
+  // console.log("newBidDataObject:", newBidDataObject);
   try {
     const response = await axios.post(bidEndpointURL + "/create", newBidDataObject);
-    // console.log("Listing:", response.data);
+    // console.log("Bid:", response.data);
   } catch (error) {
     printAxiosError(error, "FAILED!! Send new Bid details into Bidding DB");
     // Undo deduct from user Wallet
@@ -245,7 +256,7 @@ app.post("/", async function (req, res, next) {
       await axios.put(userEndpointURL + "/wallet", walletData);
     }
     // Undo update listing with new highest userId and bid price
-    await axios.put(listingEndpointURL + "/updateListing/" + listingData.id, listingData);
+    await axios.put(listingEndpointURL + "/updateListing/" + listingData.listingId, listingData);
 
     res.status(500).json({ error: error.message });
     return;

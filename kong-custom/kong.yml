@@ -1,0 +1,131 @@
+_format_version: "3.0"
+_transform: false
+
+services:
+  ###########################################################################
+  ###########################################################################
+  # Listing #
+  ###########################################################################
+  ###########################################################################
+  # Get Listing Simple
+  - name: listing-get-service
+    url: http://listings:9999/getListing
+    plugins:
+      - name: key-auth
+        service: listing-get-service
+        config:
+          key_names:
+            - apikey
+    routes:
+      - name: listing-get-route
+        methods:
+          - GET
+        paths:
+          - /listing/getListing
+        plugins:
+          - name: acl
+            route: listing-get-route
+            config:
+              allow:
+                - admins
+              hide_groups_header: false
+  # Get Listing By Seller Simple
+  - name: listing-get-by-seller-service
+    url: http://listings:9999/getListingsBySeller
+    plugins:
+      - name: key-auth
+        service: listing-get-by-seller-service
+        config:
+          key_names:
+            - apikey
+    routes:
+      - name: listing-get-by-seller-route
+        methods:
+          - GET
+        paths:
+          - /listing/getListingsBySeller
+        plugins:
+          - name: acl
+            route: listing-get-by-seller-route
+            config:
+              allow:
+                - admins
+              hide_groups_header: false
+  # Create Listing Simple
+  - name: listing-create-service
+    url: http://listings:9999/createListing
+    plugins:
+      - name: key-auth
+        service: listing-create-service
+        config:
+          key_names:
+            - apikey
+    routes:
+      - name: listing-create-route
+        methods:
+          - POST
+        paths:
+          - /listing/createListing
+        plugins:
+          - name: acl
+            route: listing-create-route
+            config:
+              allow:
+                - admins
+              hide_groups_header: false
+  # Update Listing Simple
+  - name: listing-update-service
+    url: http://listings:9999/updateListing
+    plugins:
+      - name: key-auth
+        service: listing-update-service
+        config:
+          key_names:
+            - apikey
+    routes:
+      - name: listing-update-route
+        methods:
+          - PUT
+        paths:
+          - /listing/updateListing
+        plugins:
+          - name: acl
+            route: listing-update-route
+            config:
+              allow:
+                - admins
+              hide_groups_header: false
+  ###########################################################################
+  ###########################################################################
+  # Bids #
+  ###########################################################################
+  ###########################################################################
+  # Get All Bids Simple
+  - name: bids-get-all-service
+    url: http://bid_microservice:3012/retrieve/all
+    plugins:
+      - name: key-auth
+        service: bids-get-all-service
+        config:
+          key_names:
+            - apikey
+    routes:
+      - name: bids-get-all-route
+        methods:
+          - GET
+        paths:
+          - /bid/retrieve/all
+        plugins:
+          - name: acl
+            route: bids-get-all-route
+            config:
+              allow:
+                - admins
+              hide_groups_header: false
+
+consumers:
+  - username: admin
+    acls:
+      - group: admins
+    keyauth_credentials:
+      - key: 0e743a2f-7d18-4e6d-b793-e078722cdcdf
