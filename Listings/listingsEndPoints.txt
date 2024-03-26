@@ -1,7 +1,8 @@
 Port: 3001
 GET
 /getListing/:listingId
-/getListingsByBuyer/:buyerId
+/getListingsBySeller/:sellerId
+/getListingsBySeller/:buyerId
 /getAllListings
 
 POST

@@ -3,17 +3,57 @@ import requests
 from datetime import datetime
 import pika
 import json
+from flasgger import Swagger
 
 app = Flask(__name__)
+# Initialize flasgger 
+app.config['SWAGGER'] = {
+    'title': 'Close auction API',
+    'version': 1.0,
+    "openapi": "3.0.2",
+    'description': 'Allows udpating of auction'
+}
+swagger = Swagger(app)
 
 # Route for closing the auction
 @app.route('/close_auction', methods=['POST'])
-
 def close_auction():
+    """
+    Close Auction Endpoint
+    
+    This endpoint is used to close an auction and perform certain operations.
 
-    error = ""
+    ---
+    parameters:
+      - name: body
+        in: body
+        description: Request body for closing auction
+        required: true
+        schema:
+          type: object
+          properties:
+            listingId:
+              type: string
+              description: The ID of the listing.
+
+    responses:
+      200:
+        description: Auction closed successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  description: A message indicating the success or failure of the operation.
+    """
+    # Your function logic here
     #Get listing from url
-    listingId = '37bc3e46-d1ec-4307-b0cd-514172e8d9a7'
+    if request.is_json:
+        request_data = request.json
+        listingId = request_data.get("listingId")
+    # listingId = '37bc3e46-d1ec-4307-b0cd-514172e8d9a7'
 
     #Get highestBid, buyerId and sellerId from listing 
     listing_service_url = 'http://localhost:9999/getListing/' + listingId
