@@ -38,7 +38,7 @@ async function createTransactionRecord(buyerId,sellerId,listingId,amount){
         }
     }
     try{
-        const response= await axios.post('http://transactionsbackend:8000/transactions/', data,config)
+        const response= await axios.post('http://transactionsbackend:8008/transactions/', data,config)
         console.log('SUCCESS!:', response.data);
         return response.data;
         
