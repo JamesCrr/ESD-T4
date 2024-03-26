@@ -17,7 +17,9 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
 import App from "./App";
+import VueMasonry from 'vue-masonry-css'
 
+ 
 // router setup
 import routes from "./routes/routes";
 
@@ -39,11 +41,15 @@ const router = new VueRouter({
 
 Vue.prototype.$Chartist = Chartist;
 
+import 'vue-material/dist/vue-material.min.css'
+import 'vue-material/dist/theme/default.css'
+
 Vue.use(VueRouter);
 Vue.use(MaterialDashboard);
 Vue.use(GlobalComponents);
 Vue.use(GlobalDirectives);
 Vue.use(Notifications);
+Vue.use(VueMasonry);
 
 /* eslint-disable no-new */
 new Vue({

@@ -30,6 +30,16 @@
                   >Listing description is required</span
                 >
               </md-field>
+              <md-field>
+                <label>Listing Image</label>
+                <md-file
+                  v-model="listingImage"
+                  @blur="$v.listingImage.$touch()"
+                ></md-file>
+                <span class="md-error" v-if="!$v.listingImage.required"
+                  >Listing Image is required</span
+                >
+              </md-field>
               <md-field :class="getValidationClass('startBid')">
                 <label>Start Bid</label>
                 <md-input
@@ -81,6 +91,7 @@ export default {
     return {
       listingName: "",
       listingDescription: "",
+      listingImage: '',
       startBid: 0,
       boosted: false,
     };
@@ -91,6 +102,9 @@ export default {
     },
     listingDescription: {
       required,
+    },
+    listingImage: {
+      required
     },
     startBid: {
       required,
