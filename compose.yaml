@@ -141,6 +141,7 @@ services:
     environment:
       - LISTING_SIMPLE_PORT_NUM=9999
       - BID_SIMPLE_PORT_NUM=3012
+      - KONG_ADMIN_APIKEY=${KONG_ADMIN_APIKEY}
     ports:
       - "3015:3000"
     networks:

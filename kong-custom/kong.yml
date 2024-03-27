@@ -1,15 +1,18 @@
 _format_version: "3.0"
 _transform: false
 
+###########################################################################
+# SERVICES #
+###########################################################################
 services:
-  ###########################################################################
-  ###########################################################################
-  # Listing #
-  ###########################################################################
-  ###########################################################################
+  ############## Listings ##############
   # Get Listing Simple
   - name: listing-get-service
-    url: http://listings:9999/getListing
+    # url: http://listings:9999/getListing
+    host: listing-get-upstream
+    path: /getListing
+    port: 80
+    protocol: http
     plugins:
       - name: key-auth
         service: listing-get-service
@@ -95,11 +98,30 @@ services:
               allow:
                 - admins
               hide_groups_header: false
-  ###########################################################################
-  ###########################################################################
-  # Bids #
-  ###########################################################################
-  ###########################################################################
+  ############## Bids ##############
+  # Create Bid Simple
+  - name: bids-create-service
+    url: http://bid_microservice:3012/create
+    plugins:
+      - name: key-auth
+        service: bids-create-service
+        config:
+          key_names:
+            - apikey
+    routes:
+      - name: bids-create-route
+        methods:
+          - POST
+        paths:
+          - /bid/create
+        plugins:
+          - name: acl
+            route: bids-create-route
+            config:
+              allow:
+                - admins
+              hide_groups_header: false
+  ############## Transactions ###########
   # Get All Bids Simple
   - name: bids-get-all-service
     url: http://bid_microservice:3012/retrieve/all
@@ -122,7 +144,133 @@ services:
               allow:
                 - admins
               hide_groups_header: false
+  # Get Bids Simple
+  - name: bids-get-service
+    url: http://bid_microservice:3012/retrieve
+    plugins:
+      - name: key-auth
+        service: bids-get-service
+        config:
+          key_names:
+            - apikey
+    routes:
+      - name: bids-get-route
+        methods:
+          - GET
+        paths:
+          - /bid/retrieve
+        plugins:
+          - name: acl
+            route: bids-get-route
+            config:
+              allow:
+                - admins
+              hide_groups_header: false
+  # Update Bids Listing Simple
+  - name: bids-update-listing-service
+    url: http://bid_microservice:3012/update/bids
+    plugins:
+      - name: key-auth
+        service: bids-update-listing-service
+        config:
+          key_names:
+            - apikey
+    routes:
+      - name: bids-update-listing-route
+        methods:
+          - PATCH
+        paths:
+          - /bid/update/bids
+        plugins:
+          - name: acl
+            route: bids-update-listing-route
+            config:
+              allow:
+                - admins
+              hide_groups_header: false
+  # Update Bids bidid Simple
+  - name: bids-update-bidid-service
+    url: http://bid_microservice:3012/update
+    plugins:
+      - name: key-auth
+        service: bids-update-bidid-service
+        config:
+          key_names:
+            - apikey
+    routes:
+      - name: bids-update-bidid-route
+        methods:
+          - PATCH
+        paths:
+          - /bid/update
+        plugins:
+          - name: acl
+            route: bids-update-bidid-route
+            config:
+              allow:
+                - admins
+              hide_groups_header: false
+  # Delete Bid Simple
+  - name: bids-delete-service
+    url: http://bid_microservice:3012/delete
+    plugins:
+      - name: key-auth
+        service: bids-delete-service
+        config:
+          key_names:
+            - apikey
+    routes:
+      - name: bids-delete-route
+        methods:
+          - DELETE
+        paths:
+          - /bid/delete
+        plugins:
+          - name: acl
+            route: bids-delete-route
+            config:
+              allow:
+                - admins
+              hide_groups_header: false
+  ############## Transactions ##############
+  # #
+  # - name: bids-delete-service
+  #   url: http://bid_microservice:3012/delete
+  #   plugins:
+  #     - name: key-auth
+  #       service: bids-delete-service
+  #       config:
+  #         key_names:
+  #           - apikey
+  #   routes:
+  #     - name: bids-delete-route
+  #       methods:
+  #         - DELETE
+  #       paths:
+  #         - /bid/delete
+  #       plugins:
+  #         - name: acl
+  #           route: bids-delete-route
+  #           config:
+  #             allow:
+  #               - admins
+  #             hide_groups_header: false
 
+###########################################################################
+# UPSTREAMS #
+###########################################################################
+upstreams:
+  - name: listing-get-upstream
+    algorithm: round-robin
+    targets:
+      - target: listings:9999
+        weight: 10
+      - target: listings2:9999
+        weight: 10
+
+###########################################################################
+# CONSUMERS #
+###########################################################################
 consumers:
   - username: admin
     acls:

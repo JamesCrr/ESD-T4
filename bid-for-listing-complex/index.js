@@ -13,9 +13,14 @@ app.use(bodyParser.json());
 // API Endpoints
 const userEndpointURL = "https://personal-swk23gov.outsystemscloud.com/User_API/rest/v1/user";
 const listingPortNum = process.env.LISTING_SIMPLE_PORT_NUM || 9999;
-const listingEndpointURL = "http://listings:" + listingPortNum;
+// const listingEndpointURL = "http://listings:" + listingPortNum;
+const listingEndpointURL = "http://kong:8000/listing";
 const bidPortNum = process.env.BID_SIMPLE_PORT_NUM || 3012;
-const bidEndpointURL = "http://bid_microservice:" + bidPortNum;
+// const bidEndpointURL = "http://bid_microservice:" + bidPortNum;
+const bidEndpointURL = "http://kong:8000/bid";
+
+// Kong API Key
+const KONG_ADMIN_APIKEY = process.env.KONG_ADMIN_APIKEY;
 
 // Connect to RabbitMQ
 const queuehostName = "notification-rabbitmq";
@@ -135,7 +140,7 @@ app.post("/", async function (req, res, next) {
     Number(incomingBidInfo?.bidPrice) === NaN
   ) {
     console.log("FAILED!! bidPrice is not a number!");
-    res.status(500).json({ error: "FAILED!! bidPrice is not a number!" });
+    res.status(500).json({ errorMessage: "FAILED!! bidPrice is not a number!" });
     return;
   }
 
@@ -151,7 +156,9 @@ app.post("/", async function (req, res, next) {
     updatedAuctionUser = response.data.UpdatedAuctionUser;
   } catch (error) {
     printAxiosError(error, "FAILED!! Update user wallet");
-    res.status(500).json({ error: error.response?.data ? error.response.data : error.message });
+    res
+      .status(500)
+      .json({ errorMessage: error.message, errorResponseData: error.response?.data ? error.response.data : undefined });
     return;
   }
 
@@ -159,7 +166,9 @@ app.post("/", async function (req, res, next) {
   console.log("GET: Get Listing highest bid");
   let listingData = {};
   try {
-    const response = await axios.get(listingEndpointURL + "/getListing/" + incomingBidInfo.listingId);
+    const response = await axios.get(listingEndpointURL + "/getListing/" + incomingBidInfo.listingId, {
+      headers: { apikey: KONG_ADMIN_APIKEY },
+    });
 
     // console.log("Listing:", response.data);
     listingData = response.data;
@@ -172,7 +181,9 @@ app.post("/", async function (req, res, next) {
     };
     await axios.put(userEndpointURL + "/wallet", walletData);
 
-    res.status(500).json({ error: error.message });
+    res
+      .status(500)
+      .json({ errorMessage: error.message, errorResponseData: error.response?.data ? error.response.data : undefined });
     return;
   }
 
@@ -194,7 +205,10 @@ app.post("/", async function (req, res, next) {
       };
       await axios.put(userEndpointURL + "/wallet", walletData);
 
-      res.status(500).json({ error: error.response?.data ? error.response.data : error.message });
+      res.status(500).json({
+        errorMessage: error.message,
+        errorResponseData: error.response?.data ? error.response.data : undefined,
+      });
       return;
     }
   }
@@ -205,7 +219,11 @@ app.post("/", async function (req, res, next) {
   newListingData.highestBid = Number(incomingBidInfo.bidPrice);
   newListingData.highestBidder = incomingBidInfo.userId;
   try {
-    const response = await axios.put(listingEndpointURL + "/updateListing/" + newListingData.listingId, newListingData);
+    const response = await axios.put(
+      listingEndpointURL + "/updateListing/" + newListingData.listingId,
+      newListingData,
+      { headers: { apikey: KONG_ADMIN_APIKEY } }
+    );
     // console.log("Listing:", response.data);
   } catch (error) {
     printAxiosError(error, "FAILED!! Send new Bid details into Bidding DB");
@@ -224,7 +242,9 @@ app.post("/", async function (req, res, next) {
       await axios.put(userEndpointURL + "/wallet", walletData);
     }
 
-    res.status(500).json({ error: error.message });
+    res
+      .status(500)
+      .json({ errorMessage: error.message, errorResponseData: error.response?.data ? error.response.data : undefined });
     return;
   }
 
@@ -237,7 +257,9 @@ app.post("/", async function (req, res, next) {
   };
   // console.log("newBidDataObject:", newBidDataObject);
   try {
-    const response = await axios.post(bidEndpointURL + "/create", newBidDataObject);
+    const response = await axios.post(bidEndpointURL + "/create", newBidDataObject, {
+      headers: { apikey: KONG_ADMIN_APIKEY },
+    });
     // console.log("Bid:", response.data);
   } catch (error) {
     printAxiosError(error, "FAILED!! Send new Bid details into Bidding DB");
@@ -258,7 +280,9 @@ app.post("/", async function (req, res, next) {
     // Undo update listing with new highest userId and bid price
     await axios.put(listingEndpointURL + "/updateListing/" + listingData.listingId, listingData);
 
-    res.status(500).json({ error: error.message });
+    res
+      .status(500)
+      .json({ errorMessage: error.message, errorResponseData: error.response?.data ? error.response.data : undefined });
     return;
   }
 
