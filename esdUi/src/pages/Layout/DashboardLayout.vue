@@ -6,17 +6,17 @@
       :sidebar-item-color="sidebarBackground"
       :sidebar-background-image="sidebarBackgroundImage"
     >
-      <sidebar-link to="/dashboard">
-        <md-icon>dashboard</md-icon>
-        <p>Dashboard</p>
+      <sidebar-link to="/listings">
+        <md-icon>content_paste</md-icon>
+        <p>Listings</p>
       </sidebar-link>
       <sidebar-link to="/user">
         <md-icon>person</md-icon>
         <p>Profile</p>
       </sidebar-link>
-      <sidebar-link to="/listings">
-        <md-icon>content_paste</md-icon>
-        <p>Listings</p>
+      <sidebar-link to="/create-listings">
+        <md-icon>edit</md-icon>
+        <p>Create Listings</p>
       </sidebar-link>
       <sidebar-link to="/bids">
         <md-icon>content_paste</md-icon>

@@ -10,10 +10,10 @@ const routes = [
   {
     path: "/",
     component: DashboardLayout,
-    redirect: "/dashboard",
+    redirect: "/listings",
     children: [
       {
-        path: "dashboard",
+        path: "listings",
         name: "Dashboard",
         component: Dashboard,
       },
@@ -23,19 +23,14 @@ const routes = [
         component: UserProfile,
       },
       {
-        path: "listings",
-        name: "Listings",
-        component: Listings,
+        path: "create-listings",
+        name: "CreateListing",
+        component: CreateAuction,
       },
       {
         path: "bids",
         name: "Bids",
         component: Bids,
-      },
-      {
-        path: "createAuction",
-        name: "CreateAuction",
-        component: CreateAuction,
       },
     ],
   },

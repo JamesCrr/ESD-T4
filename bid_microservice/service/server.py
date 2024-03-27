@@ -390,6 +390,33 @@ def update_all_bids(listingId):
         # Handle other unexpected exceptions (e.g., issues with the MongoDB connection)
         logging.info(e)
         return jsonify({'error': 'Internal server error'}), 500
+    
+# Reset all bid statuses to 'Pending'
+@app.route('/reset/status', methods=['PATCH'])
+def reset_bid_statuses():
+    """
+    Reset all bid statuses to 'Pending'.
+    ---
+    tags:
+      - Reset bids
+    responses:
+        200:
+            description: All bid statuses reset to 'Pending' successfully
+        500:
+            description: Handling of unexpected errors 
+    """
+    try:
+        # Update all bids' statuses to 'Pending'
+        res = collection.update_many({}, {'$set': {'bidStatus': 'Pending'}})
+        
+        if res.modified_count > 0:
+            return jsonify({'message': 'All bid statuses reset to \'Pending\' successfully'}), 200
+        else:
+            return jsonify({'message': 'No changes applied'}), 200
+    except Exception as e:
+        logging.info(e)
+        return jsonify({'error': 'Internal server error'}), 500
+
 
 # Delete bid entry 
 @app.route('/delete/<string:bidId>', methods=['DELETE'])

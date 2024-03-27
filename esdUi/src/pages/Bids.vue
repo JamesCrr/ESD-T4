@@ -6,21 +6,23 @@
       >
         <md-card class="md-card-plain">
           <md-card-header data-background-color="green">
-            <h4 class="title">Ongoing Auctions</h4>
+            <h4 class="title">Ongoing Bids</h4>
           </md-card-header>
           <md-card-content>
           </md-card-content>
         </md-card>
+        <BidListings></BidListings>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import BidListings from '../components/Tables/BidListings.vue';
 
 export default {
   components: {
-    
+    BidListings
   },
 };
 </script>
