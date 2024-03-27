@@ -66,14 +66,14 @@ services:
   #   depends_on:
   #     - backend
 
-  # close_auction:
-  #   build: ./close_auction
-  #   container_name: close_auction  
-  #   # restart: on-failure
-  #   networks:
-  #     - own-net
-  #   ports:
-  #     - "8888:8888"
+  close_auction:
+    build: ./close_auction
+    container_name: close_auction  
+    # restart: on-failure
+    networks:
+      - own-net
+    ports:
+      - "8888:8888"
 
   transactions_backend:
     build: ./transactions_backend
