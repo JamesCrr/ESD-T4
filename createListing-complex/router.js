@@ -8,6 +8,8 @@ const {
   sendEmail,
   updateUserWallet,
   createTransactionRecord,
+  deleteListing,
+  deleteTransactionRecord,
 } = require("./service");
 
 // define the about route
@@ -26,12 +28,13 @@ router.post("/createListing", async (req, res) => {
       .status(400)
       .json({ error: "Missing required attributes in request body" });
   }
+  //if boosted is true
   if (postData.boosted) {
     let deduct, result, listingId, createRecord, result2;
     const amount = 2;
     //try updating user wallet
     try {
-      deduct = await updateUserWallet(postData.sellerId, amount);
+      deduct = await updateUserWallet(postData.sellerId, -amount);
     } catch (error) {
       console.log(error.message);
       return res.status(400).json({ result: "Error updating User wallet" });
@@ -51,6 +54,15 @@ router.post("/createListing", async (req, res) => {
         listingId = result.key;
       } catch (error) {
         console.log(error.message);
+        try {
+          await updateUserWallet(postData.sellerId, amount);
+          console.log("wallet reversed")
+        } catch (error2) {
+          console.log(error2.message);
+          return res
+            .status(400)
+            .json({ result: "Error reversing from create listing" });
+        }
         return res.status(400).json({ result: "Error creating Listing" });
       }
       //try creating transaction record
@@ -62,6 +74,17 @@ router.post("/createListing", async (req, res) => {
         );
       } catch (error) {
         console.log(error.message);
+        try {
+          await updateUserWallet(postData.sellerId, amount);
+          await deleteListing(listingId);
+          console.log("wallet,listing reversed")
+
+        } catch (error2) {
+          console.log(error2.message);
+          return res
+            .status(400)
+            .json({ result: "Error reversing from create transaction record" });
+        }
         return res
           .status(400)
           .json({ result: "Error creating transaction record" });
@@ -71,6 +94,18 @@ router.post("/createListing", async (req, res) => {
         result2 = await getUser(postData.sellerId);
         sendEmail(result2.AuctionUsers[0].email);
       } catch (error) {
+        try {
+          await updateUserWallet(postData.sellerId, amount);
+          await deleteListing(listingId);
+          await deleteTransactionRecord(createRecord.transactionId);
+          console.log("wallet,listing,transaction record reversed")
+        } catch (error2) {
+          console.log(error2.message);
+          return res
+            .status(400)
+            .json({ result: "Error reversing from send email" });
+        }
+
         console.log(error.message);
         return res
           .status(400)
@@ -89,8 +124,10 @@ router.post("/createListing", async (req, res) => {
     } else {
       return res.status(200).json({ result: "Not enough money to buy boost" });
     }
+    //if boosted is false
   } else {
-    let result, result2;
+    let result, result2, listingId;
+    //try create listing
     try {
       var listing = {
         listingName: postData.listingName,
@@ -101,15 +138,27 @@ router.post("/createListing", async (req, res) => {
         boosted: false,
       };
       result = await createListing(listing);
+      listingId = result.key;
     } catch (error) {
       console.log(error.message);
       return res.status(400).json({ result: "Error getting creating Listing" });
     }
+    //try sending email
     try {
       result2 = await getUser(postData.sellerId);
       sendEmail(result2.AuctionUsers[0].email);
     } catch (error) {
       console.log(error.message);
+      try {
+        await deleteListing(listingId);
+        console.log("listing reversed")
+
+      } catch (error2) {
+        console.log(error2.message);
+        return res
+          .status(400)
+          .json({ result: "Error reversing from create create listing" });
+      }
       return res
         .status(400)
         .json({ result: "Error getting user and sending email" });
