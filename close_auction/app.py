@@ -11,7 +11,7 @@ app.config['SWAGGER'] = {
     'title': 'Close auction API',
     'version': 1.0,
     "openapi": "3.0.2",
-    'description': 'Allows udpating of auction'
+    'description': 'Allows closing of auction'
 }
 swagger = Swagger(app)
 
@@ -49,6 +49,7 @@ def close_auction():
                   description: A message indicating the success or failure of the operation.
     """
     # Your function logic here
+    error = ""
     #Get listing from url
     if request.is_json:
         request_data = request.json
@@ -60,18 +61,22 @@ def close_auction():
     response = requests.get(listing_service_url)
 
     #check for response to do later
-
+    if response.status_code == 200:
+        print(response.json())
+    else:
+        error = "A"
+        return jsonify({'error': error})
+    
     data = response.json()
-
+    
     #Store data for further use
     highestBid = data.get("highestBid")
     buyerId = data.get("buyerId")
     sellerId = data.get("sellerId")
 
     #params needed for post following post request
-    # params_json = {"highestBid": highestBid, "buyerId": buyerId, "sellerId": sellerId, "listingId":listingId}
-    params_json = {"amount": 1, "buyerId": "7f3b428f-050c-446b-ac9d-7176b3f11b14", "sellerId": "3ae1a890-fa30-47c3-ac70-6a282d492b4b", "listingId":"13213113dadsdasda"}
-
+    params_json = {"highestBid": highestBid, "buyerId": buyerId, "sellerId": sellerId, "listingId":listingId}
+    
     #Post request to payment complex microservice sending the listingid, userid of seller and buyer
     payment_service_url = 'http://localhost:3031/closeAuctionPost'
     response = requests.post(payment_service_url, json = params_json)
@@ -79,6 +84,9 @@ def close_auction():
     #check for response to do later
     if response.status_code == 200:
         print(response.json())
+    else:
+        error = "B"
+        return jsonify({'error': error})
 
     #update listing status
     listing_service_url = 'http://localhost:9999/updateListing/' + listingId
@@ -90,6 +98,9 @@ def close_auction():
 
     if response.status_code == 200:
         print(response.json())
+    else:
+        error = "C"
+        return jsonify({'error': error})
 
     #Get all bidders userid
     bidding_service_url = "http://localhost:3012/retrieve/all"
@@ -146,4 +157,4 @@ def close_auction():
     return jsonify({'message': 'Auction closed successfully'})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=8888)
