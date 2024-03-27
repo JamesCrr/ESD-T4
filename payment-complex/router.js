@@ -36,7 +36,7 @@ router.post("/closeAuctionPost", async (req, res) => {
   }
   if (!result.Result.success) {
     console.log("Not ")
-    return res.json({
+    return res.status(400).json({
       Result: {
         success: false,
         message: "Error adding money into account",
@@ -45,7 +45,6 @@ router.post("/closeAuctionPost", async (req, res) => {
   } else {
 
     //try to create tranasction record
-
     try {
       result2 = await createTransactionRecord(
         postData.buyerId,
@@ -55,11 +54,20 @@ router.post("/closeAuctionPost", async (req, res) => {
       );
     } catch (error) {
       console.log(error.message);
+      try{
+        await updateUserWallet(postData.sellerId, -postData.highestBid);
+        console.log("seller wallet reversed")
+      }catch(error){
+        console.log(error.message)
+        return res
+        .status(400)
+        .json({ result: "Error reversing from creating transaction record" });
+    }
       return res
         .status(500)
         .json({ error: "Error updating transaction record wallet" });
     }
-
+    
     //finally
     console.log("Success: Wallet updated and transaction record created!");
     return res.status(200).json({
