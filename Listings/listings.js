@@ -9,10 +9,12 @@ var cors = require('cors')
 const serviceAccount = require('./serviceAccountKeyListings.json');
 firebaseAdmin.initializeApp({
   credential: firebaseAdmin.credential.cert(serviceAccount),
-  databaseURL: 'https://esd-listings-default-rtdb.asia-southeast1.firebasedatabase.app'
+  databaseURL: 'https://esd-listings-default-rtdb.asia-southeast1.firebasedatabase.app',
+  storageBucket: 'esd-listings.appspot.com' 
 });
 
 const db = firebaseAdmin.database();
+const storage = firebaseAdmin.storage().bucket();
 const app = express();
 const port = 9999;
 app.use(cors())
@@ -21,7 +23,7 @@ app.use(cors())
 function addListing(listing) {
   try{
       const newListingKey = uuidv4();
-      const dateTimeCreated = new Date(Date.now())
+      const dateTimeCreated = new Date();
       
       // Default values
       listing.listingId = newListingKey;
@@ -31,7 +33,6 @@ function addListing(listing) {
       listing.transactionEndDateTime = "";
       listing.highestBidder = "";
       listing.status = true;
-      listing.boosted = false;
       listing.transactionStatus = false;
       listing.highestBid = listing.startBid;
 
@@ -45,6 +46,31 @@ function addListing(listing) {
       console.error('Error adding item:', error);
       throw error;
     };
+}
+
+// Function to upload image to Firebase Storage
+async function uploadImageToStorage(file) {
+  const { originalname, buffer } = file;
+  const storagePath = `listings/${originalname}`;
+
+  return new Promise((resolve, reject) => {
+    const fileUpload = storage.file(storagePath);
+
+    const blobStream = fileUpload.createWriteStream({
+      metadata: {
+        contentType: 'image/jpeg', // Adjust contentType as per your file type
+      },
+    });
+
+    blobStream.on('error', reject);
+
+    blobStream.on('finish', () => {
+      const publicUrl = `https://storage.googleapis.com/${storage.bucketName}/${storagePath}`;
+      resolve(publicUrl);
+    });
+
+    blobStream.end(buffer);
+  });
 }
 
 // Middleware to parse JSON bodies
@@ -89,7 +115,7 @@ app.get('/getListingsBySeller/:sellerId', (req, res) => {
 });
 
 // GET listings based on Buyer ID
-app.get('/getListingsBySeller/:buyerId', (req, res) => {
+app.get('/getListingsByBuyer/:buyerId', (req, res) => {
   const buyerId = req.params.buyerId;
   db.ref('listings')
     .orderByChild('buyerId')
@@ -128,10 +154,10 @@ app.get('/getAllListings', (req, res) => {
 
 
 // POST Create listing
-app.post('/createListing', (req, res) => {
-  const allowedParams = ['listingName', 'listingDescription', 'sellerId', 'startBid','listingImg'];
+app.post('/createListing', async (req, res) => {
+  const allowedParams = ['listingName', 'listingDescription', 'sellerId', 'startBid', 'listingImg', 'boosted'];
   const newListing = req.body;
-  
+
   // Check if ALL required parameters present in request body
   const isValid = allowedParams.every(param => Object.prototype.hasOwnProperty.call(newListing, param));
 
@@ -139,30 +165,86 @@ app.post('/createListing', (req, res) => {
     return res.status(400).json({ error: 'Missing or invalid parameters in the request body' });
   }
 
-  addListing(newListing)
-    .then((newListingKey) => {
-      res.status(201).json({ message: 'Listing created successfully', key: newListingKey });
-    })
-    .catch(error => {
-      res.status(500).json({ error: error.message });
-    });
+  try {
+    const listingImgUrl = await uploadImageToStorage(req.body.listingImg);
+
+    // Add image URL to new listing
+    newListing.listingImg = listingImgUrl;
+
+    // Add the listing to database
+    const newListingKey = await addListing(newListing);
+
+    res.status(201).json({ message: 'Listing created successfully', key: newListingKey });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
-// PUT Update listing, partial update
+// POST Create listing
+// app.post('/createListing', (req, res) => {
+//   const allowedParams = ['listingName', 'listingDescription', 'sellerId', 'startBid'];
+//   const newListing = req.body;
+  
+//   // Check if ALL required parameters present in request body
+//   const isValid = allowedParams.every(param => Object.prototype.hasOwnProperty.call(newListing, param));
+
+//   if (!isValid) {
+//     return res.status(400).json({ error: 'Missing or invalid parameters in the request body' });
+//   }
+
+//   addListing(newListing)
+//     .then((newListingKey) => {
+//       res.status(201).json({ message: 'Listing created successfully', key: newListingKey });
+//     })
+//     .catch(error => {
+//       res.status(500).json({ error: error.message });
+//     });
+// });
+
+// PUT Update listing
 app.put('/updateListing/:listingId', (req, res) => {
   const listingId = req.params.listingId;
-  // const allowedParams = ['name', 'description', 'buyerId','highestBid', 'highestBidder', 'status', 'transactionEndDateTime', 
-  //                       'autionEndDateTime', 'status', 'transactionStatus', 'boosted'];
+  const allowedParams = ['listingName', 'listingDescription', 'buyerId', 'highestBid', 'highestBidder', 'status', 
+  'transactionEndDateTime', 'transactionStatus', 'boosted', 'bidPrice'];
   const updatedListing = req.body;
 
   // Check if all parameters in the request body are allowed
-  // const isValid = Object.keys(updatedListing).every(param => allowedParams.includes(param));
+  const isValid = Object.keys(updatedListing).every(param => allowedParams.includes(param));
   
-  // if (!isValid) {
-  //   return res.status(400).json({ error: 'Invalid parameters in the request body' });
-  // }
+  if (!isValid) {
+    return res.status(400).json({ error: 'Invalid parameters in the request body' });
+  }
 
-  db.ref(`listings/${listingId}`).update(updatedListing)
+  // Fetch current listing details
+  db.ref(`listings/${listingId}`).once('value')
+    .then(snapshot => {
+      const currentListing = snapshot.val();
+      if (!currentListing) {
+        return res.status(404).json({ error: 'Listing not found' });
+      }
+
+      const highestBid = currentListing.highestBid;
+
+      if ('status' in updatedListing){
+        // Update auctionEndDateTime if listing is closed 
+        if (updatedListing.status === false) {
+          updatedListing.auctionEndDateTime = new Date().toISOString();
+        }
+        //If reopen listing, delete auctionEndDateTime
+        else {
+          updatedListing.auctionEndDateTime = "";
+        }
+      }
+
+      // Update highestBid if bidPrice is higher
+      if (updatedListing.bidPrice > highestBid) {
+        currentListing.highestBid = updatedListing.bidPrice;
+      }
+
+      delete updatedListing.bidPrice;
+      // Update the listing in the database
+      return db.ref(`listings/${listingId}`).update(updatedListing);
+    })
     .then(() => {
       res.json({ message: 'Listing updated successfully' });
     })

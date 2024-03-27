@@ -15,6 +15,17 @@ async function createListing(listing) {
   }
 }
 
+async function deleteListing(listingId) {
+  try {
+    const response = await axios.delete(
+      `http://listings:9999/${listingId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.log("Error", error.message);
+  }
+}
+
 async function getUser(userId) {
   const params = {
     userId: userId,
@@ -34,7 +45,7 @@ async function updateUserWallet(userId, amount) {
   try {
     postData = {
       userId: userId,
-      updateAmount: -amount,
+      updateAmount: amount,
     };
     const response = await axios.put(
       "https://personal-swk23gov.outsystemscloud.com/User_API/rest/v1/user/wallet",
@@ -71,6 +82,19 @@ async function createTransactionRecord(buyerId, listingId, amount) {
       config
     );
     console.log("SUCCESS!:", response.data);
+    return response.data;
+  } catch (error) {
+    console.log("Error", error.message);
+  }
+}
+
+async function deleteTransactionRecord(transactionId) {
+ 
+  try {
+    const response = await axios.delete(
+      `http://transactionsbackend:8008/transactions/${transactionId}`
+    );
+    console.log("Deleted!:", response.data);
     return response.data;
   } catch (error) {
     console.log("Error", error.message);
@@ -151,8 +175,10 @@ async function sendEmail(emailtarget) {
 }
 module.exports = {
   createListing,
+  deleteListing,
   getUser,
   sendEmail,
   updateUserWallet,
   createTransactionRecord,
+  deleteTransactionRecord
 };
